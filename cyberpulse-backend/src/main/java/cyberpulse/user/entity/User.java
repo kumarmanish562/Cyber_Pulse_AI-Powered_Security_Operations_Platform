@@ -1,6 +1,7 @@
 package cyberpulse.user.entity;
 
 
+import cyberpulse.auth.entity.Role;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -19,31 +20,54 @@ import java.util.UUID;
 public class User {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
+    @GeneratedValue(
+            strategy = GenerationType.UUID
+    )
     private UUID id;
 
-    @Column(nullable = false, length = 50)
+    @Column(
+            nullable = false,
+            length = 50
+    )
     private String username;
 
-    @Column(nullable = false, length = 255)
+    @Column(
+            nullable = false,
+            length = 255
+    )
     private String email;
 
-    @Column(name = "password_hash", nullable = false)
+    @Column(
+            name = "password_hash",
+            nullable = false
+    )
     private String passwordHash;
 
-    @Column(nullable = false)
+    @Column(
+            nullable = false
+    )
     private boolean enabled = true;
 
-    @Column(nullable = false)
+    @Column(
+            nullable = false
+    )
     private boolean locked = false;
 
-    @Column(name = "created_at", nullable = false)
+    @Column(
+            name = "created_at",
+            nullable = false
+    )
     private Instant createdAt;
 
-    @Column(name = "updated_at", nullable = false)
+    @Column(
+            name = "updated_at",
+            nullable = false
+    )
     private Instant updatedAt;
 
-    @Column(name = "last_login_at")
+    @Column(
+            name = "last_login_at"
+    )
     private Instant lastLoginAt;
 
     @OneToMany(
@@ -66,5 +90,21 @@ public class User {
     protected void onUpdate() {
 
         updatedAt = Instant.now();
+    }
+
+    public void addRole(Role role){
+
+        UserRole userRole = new UserRole();
+
+        UserRoleId userRoleId = new UserRoleId(
+                this.id,
+                role.getId()
+        );
+
+        userRole.setId(userRoleId);
+        userRole.setUser(this);
+        userRole.setRole(role);
+
+        roles.add(userRole);
     }
 }

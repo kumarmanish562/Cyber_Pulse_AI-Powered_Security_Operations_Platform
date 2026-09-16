@@ -3,8 +3,6 @@ spring:
     url: jdbc:postgresql://localhost:5432/cyberpulse
     username: postgres
     password: 0328
-    driver-class-name: org.postgresql.Driver
 
-  jpa:
-    hibernate:
-      ddl-auto: validate
+jwt:
+  secret: wyv6SnkAf/easwF3mXcCBwVaJ4oflZzqYBmPC08hECcxbKGjSyB9i7rRnrVc+LqwhnlMG9CYoukCkolV6yJ7hA==
