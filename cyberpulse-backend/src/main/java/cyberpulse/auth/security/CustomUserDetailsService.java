@@ -12,6 +12,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Service
 public class CustomUserDetailsService
         implements UserDetailsService {
@@ -39,18 +42,38 @@ public class CustomUserDetailsService
                 );
 
         List<GrantedAuthority> authorities =
-                user.getRoles()
-                        .stream()
-                        .map(UserRole::getRole)
-                        .map(role ->
+                new ArrayList<>();
+
+        for (UserRole userRole : user.getRoles()) {
+
+            String roleName =
+                    userRole.getRole().getName();
+
+            // Role authority
+            authorities.add(
+                    new SimpleGrantedAuthority(
+                            "ROLE_" + roleName
+                    )
+            );
+
+            // Permission authorities
+            userRole
+                    .getRole()
+                    .getRolePermissions()
+                    .forEach(rolePermission -> {
+
+                        String permission =
+                                rolePermission
+                                        .getPermission()
+                                        .getName();
+
+                        authorities.add(
                                 new SimpleGrantedAuthority(
-                                        "ROLE_" + role.getName()
+                                        permission
                                 )
-                        )
-                        .map(authority ->
-                                (GrantedAuthority) authority
-                        )
-                        .toList();
+                        );
+                    });
+        }
 
         return org.springframework.security.core.userdetails.User
                 .withUsername(user.getUsername())

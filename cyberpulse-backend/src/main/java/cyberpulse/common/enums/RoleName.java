@@ -1,9 +1,19 @@
 package cyberpulse.common.enums;
 
-public enum RoleName {
+public final class RoleName {
 
-    ADMIN,
-    SECURITY_ANALYST,
-    SECURITY_ENGINEER,
-    VIEWER
+    private RoleName() {
+    }
+
+    public static final String ADMIN =
+            "ADMIN";
+
+    public static final String SECURITY_ANALYST =
+            "SECURITY_ANALYST";
+
+    public static final String SECURITY_ENGINEER =
+            "SECURITY_ENGINEER";
+
+    public static final String VIEWER =
+            "VIEWER";
 }

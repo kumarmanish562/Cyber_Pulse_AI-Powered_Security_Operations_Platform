@@ -1,7 +1,7 @@
 package cyberpulse.common.exception;
 
-
 import cyberpulse.common.response.ErrorResponse;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 
 import org.springframework.http.HttpStatus;
@@ -44,12 +44,36 @@ public class GlobalExceptionHandler {
 
 
     // ============================================================
-    // 404 - Resource not found
+    // 404 - Application resource not found
     // ============================================================
 
     @ExceptionHandler(ResourceNotFoundException.class)
-    public ResponseEntity<ErrorResponse> handleNotFound(
+    public ResponseEntity<ErrorResponse> handleResourceNotFound(
             ResourceNotFoundException exception,
+            HttpServletRequest request) {
+
+        ErrorResponse response = ErrorResponse.builder()
+                .timestamp(Instant.now())
+                .status(HttpStatus.NOT_FOUND.value())
+                .code("RESOURCE_NOT_FOUND")
+                .message(exception.getMessage())
+                .path(request.getRequestURI())
+                .details(List.of())
+                .build();
+
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(response);
+    }
+
+
+    // ============================================================
+    // 404 - JPA entity not found
+    // ============================================================
+
+    @ExceptionHandler(EntityNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleEntityNotFound(
+            EntityNotFoundException exception,
             HttpServletRequest request) {
 
         ErrorResponse response = ErrorResponse.builder()
@@ -142,6 +166,30 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity
                 .badRequest()
+                .body(response);
+    }
+
+
+    // ============================================================
+    // 409 - Operation not allowed
+    // ============================================================
+
+    @ExceptionHandler(IllegalStateException.class)
+    public ResponseEntity<ErrorResponse> handleIllegalState(
+            IllegalStateException exception,
+            HttpServletRequest request) {
+
+        ErrorResponse response = ErrorResponse.builder()
+                .timestamp(Instant.now())
+                .status(HttpStatus.CONFLICT.value())
+                .code("OPERATION_NOT_ALLOWED")
+                .message(exception.getMessage())
+                .path(request.getRequestURI())
+                .details(List.of())
+                .build();
+
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
                 .body(response);
     }
 

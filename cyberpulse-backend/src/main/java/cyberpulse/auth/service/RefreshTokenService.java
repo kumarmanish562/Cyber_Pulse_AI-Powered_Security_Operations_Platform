@@ -1,4 +1,4 @@
-package cyberpulse.auth.security;
+package cyberpulse.auth.service;
 
 
 import cyberpulse.auth.entity.RefreshToken;

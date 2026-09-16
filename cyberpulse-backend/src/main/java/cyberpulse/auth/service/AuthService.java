@@ -8,7 +8,6 @@ import cyberpulse.auth.dto.UserResponse;
 import cyberpulse.auth.entity.Role;
 import cyberpulse.auth.repository.RoleRepository;
 import cyberpulse.auth.security.JwtService;
-import cyberpulse.auth.security.RefreshTokenService;
 import cyberpulse.user.entity.User;
 import cyberpulse.user.repository.UserRepository;
 

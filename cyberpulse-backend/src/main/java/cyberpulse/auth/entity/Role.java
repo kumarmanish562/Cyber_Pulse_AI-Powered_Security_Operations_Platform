@@ -52,4 +52,17 @@ public class Role {
 
         updatedAt = Instant.now();
     }
+    @OneToMany(
+            mappedBy = "role"
+    )
+    private Set<RolePermission> rolePermissions =
+            new HashSet<>();
+
+    public Role(
+            String name,
+            String description
+    ) {
+        this.name = name;
+        this.description = description;
+    }
 }

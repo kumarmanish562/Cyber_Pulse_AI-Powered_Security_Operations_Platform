@@ -2,6 +2,9 @@ package cyberpulse.config;
 
 import cyberpulse.auth.security.JwtAuthenticationFilter;
 
+import cyberpulse.common.exception.RestAccessDeniedHandler;
+import cyberpulse.common.exception.RestAuthenticationEntryPoint;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -10,25 +13,22 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 
 import org.springframework.security.config.http.SessionCreationPolicy;
 
-import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 @EnableMethodSecurity
+@RequiredArgsConstructor
 public class SecurityConfig {
 
-    private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final JwtAuthenticationFilter
+            jwtAuthenticationFilter;
 
-    private final AuthenticationEntryPoint authenticationEntryPoint;
+    private final RestAuthenticationEntryPoint
+            authenticationEntryPoint;
 
-    public SecurityConfig(
-            JwtAuthenticationFilter jwtAuthenticationFilter,
-            AuthenticationEntryPoint authenticationEntryPoint
-    ) {
-        this.jwtAuthenticationFilter = jwtAuthenticationFilter;
-        this.authenticationEntryPoint = authenticationEntryPoint;
-    }
+    private final RestAccessDeniedHandler
+            accessDeniedHandler;
 
     @Bean
     public SecurityFilterChain securityFilterChain(
@@ -36,6 +36,7 @@ public class SecurityConfig {
     ) throws Exception {
 
         http
+
                 .csrf(csrf ->
                         csrf.disable()
                 )
@@ -47,13 +48,19 @@ public class SecurityConfig {
                 )
 
                 .exceptionHandling(exception ->
-                        exception.authenticationEntryPoint(
-                                authenticationEntryPoint
-                        )
+                        exception
+                                .authenticationEntryPoint(
+                                        authenticationEntryPoint
+                                )
+                                .accessDeniedHandler(
+                                        accessDeniedHandler
+                                )
                 )
 
                 .authorizeHttpRequests(auth ->
                         auth
+
+                                // Phase 4 authentication endpoints
                                 .requestMatchers(
                                         "/api/auth/register",
                                         "/api/auth/login",
@@ -63,11 +70,13 @@ public class SecurityConfig {
                                 )
                                 .permitAll()
 
+                                // Health
                                 .requestMatchers(
-                                        "/api/auth/me"
+                                        "/actuator/health"
                                 )
-                                .authenticated()
+                                .permitAll()
 
+                                // Everything else
                                 .anyRequest()
                                 .authenticated()
                 )
