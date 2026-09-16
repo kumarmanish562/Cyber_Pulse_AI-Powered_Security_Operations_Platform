@@ -1,17 +1,22 @@
 package cyberpulse.common.exception;
 
 import cyberpulse.common.response.ErrorResponse;
+import cyberpulse.event.service.SecurityEventService;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.authentication.BadCredentialsException;
 
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+
+// Add the correct import for your SecurityEventService
+// import cyberpulse.security.event.service.SecurityEventService;
 
 import java.time.Instant;
 import java.util.List;
@@ -42,7 +47,6 @@ public class GlobalExceptionHandler {
                 .body(response);
     }
 
-
     // ============================================================
     // 404 - Application resource not found
     // ============================================================
@@ -65,7 +69,6 @@ public class GlobalExceptionHandler {
                 .status(HttpStatus.NOT_FOUND)
                 .body(response);
     }
-
 
     // ============================================================
     // 404 - JPA entity not found
@@ -90,7 +93,6 @@ public class GlobalExceptionHandler {
                 .body(response);
     }
 
-
     // ============================================================
     // 400 - Business error
     // ============================================================
@@ -113,7 +115,6 @@ public class GlobalExceptionHandler {
                 .badRequest()
                 .body(response);
     }
-
 
     // ============================================================
     // 400 - Illegal argument
@@ -138,9 +139,9 @@ public class GlobalExceptionHandler {
                 .body(response);
     }
 
-
     // ============================================================
     // 400 - Validation error
+    // Returns ALL validation errors
     // ============================================================
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -152,7 +153,10 @@ public class GlobalExceptionHandler {
                 .getFieldErrors()
                 .stream()
                 .map(error ->
-                        error.getField() + ": " + error.getDefaultMessage())
+                        error.getField()
+                                + ": "
+                                + error.getDefaultMessage()
+                )
                 .toList();
 
         ErrorResponse response = ErrorResponse.builder()
@@ -169,6 +173,30 @@ public class GlobalExceptionHandler {
                 .body(response);
     }
 
+    // ============================================================
+    // 400 - Invalid JSON / malformed request body / invalid enum
+    // ============================================================
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ErrorResponse> handleUnreadableMessage(
+            HttpMessageNotReadableException exception,
+            HttpServletRequest request) {
+
+        ErrorResponse response = ErrorResponse.builder()
+                .timestamp(Instant.now())
+                .status(HttpStatus.BAD_REQUEST.value())
+                .code("INVALID_REQUEST_BODY")
+                .message(
+                        "Request body contains invalid or malformed values"
+                )
+                .path(request.getRequestURI())
+                .details(List.of())
+                .build();
+
+        return ResponseEntity
+                .badRequest()
+                .body(response);
+    }
 
     // ============================================================
     // 409 - Operation not allowed
@@ -193,6 +221,30 @@ public class GlobalExceptionHandler {
                 .body(response);
     }
 
+    // ============================================================
+    // 404 - Security event not found
+    // ============================================================
+
+    @ExceptionHandler(
+            SecurityEventService.EventNotFoundException.class
+    )
+    public ResponseEntity<ErrorResponse> handleEventNotFound(
+            SecurityEventService.EventNotFoundException exception,
+            HttpServletRequest request) {
+
+        ErrorResponse response = ErrorResponse.builder()
+                .timestamp(Instant.now())
+                .status(HttpStatus.NOT_FOUND.value())
+                .code("EVENT_NOT_FOUND")
+                .message(exception.getMessage())
+                .path(request.getRequestURI())
+                .details(List.of())
+                .build();
+
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(response);
+    }
 
     // ============================================================
     // 500 - Unexpected error

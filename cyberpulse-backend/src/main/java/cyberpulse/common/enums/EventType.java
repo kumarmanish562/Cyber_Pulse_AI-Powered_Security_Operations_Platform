@@ -1,0 +1,14 @@
+package cyberpulse.common.enums;
+
+public enum EventType {
+
+    LOGIN_FAILED,
+    LOGIN_SUCCESS,
+    PORT_SCAN,
+    MALWARE_DETECTED,
+    SUSPICIOUS_LOGIN,
+    BRUTE_FORCE,
+    UNAUTHORIZED_ACCESS,
+    FILE_MODIFIED,
+    PRIVILEGE_ESCALATION
+}
