@@ -1,12 +1,12 @@
 package cyberpulse.incident.controller;
 
+import cyberpulse.common.response.PageResponse;
 import cyberpulse.incident.dto.*;
 import cyberpulse.incident.entity.IncidentSeverity;
 import cyberpulse.incident.entity.IncidentStatus;
 import cyberpulse.incident.service.IncidentService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/incidents")
+@RequestMapping("/api/v1/incidents")
 @RequiredArgsConstructor
 public class IncidentController {
 
@@ -39,17 +39,19 @@ public class IncidentController {
 
 
     // =========================================================
-    // GET ALL
+    // GET ALL — PAGINATED
     // =========================================================
 
     @GetMapping
     @PreAuthorize("hasAuthority('INCIDENT_READ')")
-    public Page<IncidentResponse> getAll(
+    public PageResponse<IncidentResponse> getAll(
             @PageableDefault(size = 20)
             Pageable pageable
     ) {
 
-        return incidentService.getAll(pageable);
+        return PageResponse.from(
+                incidentService.getAll(pageable)
+        );
     }
 
 
@@ -82,39 +84,43 @@ public class IncidentController {
 
 
     // =========================================================
-    // GET BY STATUS
+    // GET BY STATUS — PAGINATED
     // =========================================================
 
     @GetMapping("/status/{status}")
     @PreAuthorize("hasAuthority('INCIDENT_READ')")
-    public Page<IncidentResponse> getByStatus(
+    public PageResponse<IncidentResponse> getByStatus(
             @PathVariable IncidentStatus status,
             @PageableDefault(size = 20)
             Pageable pageable
     ) {
 
-        return incidentService.getByStatus(
-                status,
-                pageable
+        return PageResponse.from(
+                incidentService.getByStatus(
+                        status,
+                        pageable
+                )
         );
     }
 
 
     // =========================================================
-    // GET BY SEVERITY
+    // GET BY SEVERITY — PAGINATED
     // =========================================================
 
     @GetMapping("/severity/{severity}")
     @PreAuthorize("hasAuthority('INCIDENT_READ')")
-    public Page<IncidentResponse> getBySeverity(
+    public PageResponse<IncidentResponse> getBySeverity(
             @PathVariable IncidentSeverity severity,
             @PageableDefault(size = 20)
             Pageable pageable
     ) {
 
-        return incidentService.getBySeverity(
-                severity,
-                pageable
+        return PageResponse.from(
+                incidentService.getBySeverity(
+                        severity,
+                        pageable
+                )
         );
     }
 

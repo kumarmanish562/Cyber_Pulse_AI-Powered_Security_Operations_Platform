@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/rules")
+@RequestMapping("/api/v1/rules")
 public class DetectionRuleController {
 
     private final DetectionRuleService ruleService;

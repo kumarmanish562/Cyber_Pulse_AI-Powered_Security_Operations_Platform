@@ -1,18 +1,16 @@
 package cyberpulse.common.response;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-
 import java.time.Instant;
 
-@Getter
-@Builder
-@AllArgsConstructor
-public class ApiResponse<T> {
+public record ApiResponse<T>(
+        T data,
+        Instant timestamp
+) {
 
-    private boolean success;
-    private String message;
-    private T data;
-    private Instant timestamp;
+    public static <T> ApiResponse<T> of(T data) {
+        return new ApiResponse<>(
+                data,
+                Instant.now()
+        );
+    }
 }

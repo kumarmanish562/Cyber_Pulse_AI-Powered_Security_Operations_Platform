@@ -1,18 +1,23 @@
 package cyberpulse.common.exception;
 
-import cyberpulse.common.response.ErrorResponse;
-import cyberpulse.event.service.SecurityEventService;
+import cyberpulse.common.response.ApiErrorResponse;
+import cyberpulse.common.response.ApiErrorResponse.FieldErrorResponse;
+import cyberpulse.common.web.CorrelationId;
 
-import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
+
+import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import org.springframework.security.access.AccessDeniedException;
-import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authorization.AuthorizationDeniedException;
+
+import org.springframework.validation.FieldError;
 
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -22,306 +27,172 @@ import java.time.Instant;
 import java.util.List;
 
 @RestControllerAdvice
+@Slf4j
 public class GlobalExceptionHandler {
 
-    // ============================================================
-    // 401 - Invalid username/password
-    // ============================================================
-
-    @ExceptionHandler(BadCredentialsException.class)
-    public ResponseEntity<ErrorResponse> handleBadCredentials(
-            BadCredentialsException exception,
-            HttpServletRequest request) {
-
-        ErrorResponse response = ErrorResponse.builder()
-                .timestamp(Instant.now())
-                .status(HttpStatus.UNAUTHORIZED.value())
-                .code("INVALID_CREDENTIALS")
-                .message("Invalid username or password")
-                .path(request.getRequestURI())
-                .details(List.of())
-                .build();
-
-        return ResponseEntity
-                .status(HttpStatus.UNAUTHORIZED)
-                .body(response);
-    }
-
-
-    // ============================================================
-    // 403 - Spring Security 7 Authorization denied
-    // ============================================================
-
-    @ExceptionHandler(AuthorizationDeniedException.class)
-    public ResponseEntity<ErrorResponse> handleAuthorizationDenied(
-            AuthorizationDeniedException exception,
-            HttpServletRequest request) {
-
-        ErrorResponse response = ErrorResponse.builder()
-                .timestamp(Instant.now())
-                .status(HttpStatus.FORBIDDEN.value())
-                .code("ACCESS_DENIED")
-                .message("You do not have permission to access this resource")
-                .path(request.getRequestURI())
-                .details(List.of())
-                .build();
-
-        return ResponseEntity
-                .status(HttpStatus.FORBIDDEN)
-                .body(response);
-    }
-
-
-    // ============================================================
-    // 403 - Traditional AccessDeniedException
-    // ============================================================
-
-    @ExceptionHandler(AccessDeniedException.class)
-    public ResponseEntity<ErrorResponse> handleAccessDenied(
-            AccessDeniedException exception,
-            HttpServletRequest request) {
-
-        ErrorResponse response = ErrorResponse.builder()
-                .timestamp(Instant.now())
-                .status(HttpStatus.FORBIDDEN.value())
-                .code("ACCESS_DENIED")
-                .message("You do not have permission to access this resource")
-                .path(request.getRequestURI())
-                .details(List.of())
-                .build();
-
-        return ResponseEntity
-                .status(HttpStatus.FORBIDDEN)
-                .body(response);
-    }
-
-
-    // ============================================================
-    // 404 - Application resource not found
-    // ============================================================
-
     @ExceptionHandler(ResourceNotFoundException.class)
-    public ResponseEntity<ErrorResponse> handleResourceNotFound(
+    public ResponseEntity<ApiErrorResponse> handleNotFound(
             ResourceNotFoundException exception,
-            HttpServletRequest request) {
-
-        ErrorResponse response = ErrorResponse.builder()
-                .timestamp(Instant.now())
-                .status(HttpStatus.NOT_FOUND.value())
-                .code("RESOURCE_NOT_FOUND")
-                .message(exception.getMessage())
-                .path(request.getRequestURI())
-                .details(List.of())
-                .build();
-
-        return ResponseEntity
-                .status(HttpStatus.NOT_FOUND)
-                .body(response);
+            HttpServletRequest request
+    ) {
+        return build(
+                HttpStatus.NOT_FOUND,
+                "RESOURCE_NOT_FOUND",
+                exception.getMessage(),
+                request,
+                List.of()
+        );
     }
-
-
-    // ============================================================
-    // 404 - JPA entity not found
-    // ============================================================
-
-    @ExceptionHandler(EntityNotFoundException.class)
-    public ResponseEntity<ErrorResponse> handleEntityNotFound(
-            EntityNotFoundException exception,
-            HttpServletRequest request) {
-
-        ErrorResponse response = ErrorResponse.builder()
-                .timestamp(Instant.now())
-                .status(HttpStatus.NOT_FOUND.value())
-                .code("RESOURCE_NOT_FOUND")
-                .message(exception.getMessage())
-                .path(request.getRequestURI())
-                .details(List.of())
-                .build();
-
-        return ResponseEntity
-                .status(HttpStatus.NOT_FOUND)
-                .body(response);
-    }
-
-
-    // ============================================================
-    // 400 - Business error
-    // ============================================================
 
     @ExceptionHandler(BusinessException.class)
-    public ResponseEntity<ErrorResponse> handleBusiness(
+    public ResponseEntity<ApiErrorResponse> handleBusiness(
             BusinessException exception,
-            HttpServletRequest request) {
-
-        ErrorResponse response = ErrorResponse.builder()
-                .timestamp(Instant.now())
-                .status(HttpStatus.BAD_REQUEST.value())
-                .code("BUSINESS_ERROR")
-                .message(exception.getMessage())
-                .path(request.getRequestURI())
-                .details(List.of())
-                .build();
-
-        return ResponseEntity
-                .badRequest()
-                .body(response);
+            HttpServletRequest request
+    ) {
+        return build(
+                HttpStatus.CONFLICT,
+                "BUSINESS_RULE_VIOLATION",
+                exception.getMessage(),
+                request,
+                List.of()
+        );
     }
-
-
-    // ============================================================
-    // 400 - Illegal argument
-    // ============================================================
-
-    @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<ErrorResponse> handleIllegalArgument(
-            IllegalArgumentException exception,
-            HttpServletRequest request) {
-
-        ErrorResponse response = ErrorResponse.builder()
-                .timestamp(Instant.now())
-                .status(HttpStatus.BAD_REQUEST.value())
-                .code("BAD_REQUEST")
-                .message(exception.getMessage())
-                .path(request.getRequestURI())
-                .details(List.of())
-                .build();
-
-        return ResponseEntity
-                .badRequest()
-                .body(response);
-    }
-
-
-    // ============================================================
-    // 400 - Validation error
-    // ============================================================
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ErrorResponse> handleValidation(
+    public ResponseEntity<ApiErrorResponse> handleValidation(
             MethodArgumentNotValidException exception,
-            HttpServletRequest request) {
+            HttpServletRequest request
+    ) {
 
-        List<String> errors = exception.getBindingResult()
-                .getFieldErrors()
-                .stream()
-                .map(error ->
-                        error.getField()
-                                + ": "
-                                + error.getDefaultMessage()
-                )
-                .toList();
+        List<FieldErrorResponse> errors =
+                exception.getBindingResult()
+                        .getFieldErrors()
+                        .stream()
+                        .map(this::toFieldError)
+                        .toList();
 
-        ErrorResponse response = ErrorResponse.builder()
-                .timestamp(Instant.now())
-                .status(HttpStatus.BAD_REQUEST.value())
-                .code("VALIDATION_ERROR")
-                .message("Request validation failed")
-                .path(request.getRequestURI())
-                .details(errors)
-                .build();
-
-        return ResponseEntity
-                .badRequest()
-                .body(response);
+        return build(
+                HttpStatus.BAD_REQUEST,
+                "VALIDATION_ERROR",
+                "Request validation failed",
+                request,
+                errors
+        );
     }
-
-
-    // ============================================================
-    // 400 - Invalid JSON / malformed request body / invalid enum
-    // ============================================================
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
-    public ResponseEntity<ErrorResponse> handleUnreadableMessage(
+    public ResponseEntity<ApiErrorResponse> handleMalformedJson(
             HttpMessageNotReadableException exception,
-            HttpServletRequest request) {
+            HttpServletRequest request
+    ) {
 
-        ErrorResponse response = ErrorResponse.builder()
-                .timestamp(Instant.now())
-                .status(HttpStatus.BAD_REQUEST.value())
-                .code("INVALID_REQUEST_BODY")
-                .message(
-                        "Request body contains invalid or malformed values"
-                )
-                .path(request.getRequestURI())
-                .details(List.of())
-                .build();
-
-        return ResponseEntity
-                .badRequest()
-                .body(response);
+        return build(
+                HttpStatus.BAD_REQUEST,
+                "MALFORMED_REQUEST",
+                "Request body is invalid or malformed",
+                request,
+                List.of()
+        );
     }
 
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<ApiErrorResponse> handleTypeMismatch(
+            MethodArgumentTypeMismatchException exception,
+            HttpServletRequest request
+    ) {
 
-    // ============================================================
-    // 409 - Operation not allowed
-    // ============================================================
-
-    @ExceptionHandler(IllegalStateException.class)
-    public ResponseEntity<ErrorResponse> handleIllegalState(
-            IllegalStateException exception,
-            HttpServletRequest request) {
-
-        ErrorResponse response = ErrorResponse.builder()
-                .timestamp(Instant.now())
-                .status(HttpStatus.CONFLICT.value())
-                .code("OPERATION_NOT_ALLOWED")
-                .message(exception.getMessage())
-                .path(request.getRequestURI())
-                .details(List.of())
-                .build();
-
-        return ResponseEntity
-                .status(HttpStatus.CONFLICT)
-                .body(response);
+        return build(
+                HttpStatus.BAD_REQUEST,
+                "INVALID_PARAMETER",
+                "Invalid request parameter: " + exception.getName(),
+                request,
+                List.of()
+        );
     }
 
+    @ExceptionHandler(MissingServletRequestParameterException.class)
+    public ResponseEntity<ApiErrorResponse> handleMissingParameter(
+            MissingServletRequestParameterException exception,
+            HttpServletRequest request
+    ) {
 
-    // ============================================================
-    // 404 - Security event not found
-    // ============================================================
-
-    @ExceptionHandler(
-            SecurityEventService.EventNotFoundException.class
-    )
-    public ResponseEntity<ErrorResponse> handleEventNotFound(
-            SecurityEventService.EventNotFoundException exception,
-            HttpServletRequest request) {
-
-        ErrorResponse response = ErrorResponse.builder()
-                .timestamp(Instant.now())
-                .status(HttpStatus.NOT_FOUND.value())
-                .code("EVENT_NOT_FOUND")
-                .message(exception.getMessage())
-                .path(request.getRequestURI())
-                .details(List.of())
-                .build();
-
-        return ResponseEntity
-                .status(HttpStatus.NOT_FOUND)
-                .body(response);
+        return build(
+                HttpStatus.BAD_REQUEST,
+                "MISSING_PARAMETER",
+                "Required parameter is missing: "
+                        + exception.getParameterName(),
+                request,
+                List.of()
+        );
     }
 
-
-    // ============================================================
-    // 500 - Unexpected error
-    // ============================================================
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ApiErrorResponse> handleAccessDenied(
+            AccessDeniedException exception,
+            HttpServletRequest request
+    ) {
+        return build(
+                HttpStatus.FORBIDDEN,
+                "ACCESS_DENIED",
+                "You do not have permission to perform this operation",
+                request,
+                List.of()
+        );
+    }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ErrorResponse> handleGeneric(
+    public ResponseEntity<ApiErrorResponse> handleUnexpected(
             Exception exception,
-            HttpServletRequest request) {
+            HttpServletRequest request
+    ) {
 
-        ErrorResponse response = ErrorResponse.builder()
-                .timestamp(Instant.now())
-                .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
-                .code("INTERNAL_SERVER_ERROR")
-                .message("An unexpected error occurred")
-                .path(request.getRequestURI())
-                .details(List.of())
-                .build();
+        log.error(
+                "Unexpected application error",
+                exception
+        );
+
+        return build(
+                HttpStatus.INTERNAL_SERVER_ERROR,
+                "INTERNAL_SERVER_ERROR",
+                "An unexpected error occurred",
+                request,
+                List.of()
+        );
+    }
+
+    private FieldErrorResponse toFieldError(
+            FieldError error
+    ) {
+        return new FieldErrorResponse(
+                error.getField(),
+                error.getDefaultMessage()
+        );
+    }
+
+    private ResponseEntity<ApiErrorResponse> build(
+            HttpStatus status,
+            String code,
+            String message,
+            HttpServletRequest request,
+            List<FieldErrorResponse> errors
+    ) {
+
+        String correlationId =
+                request.getHeader(CorrelationId.HEADER);
+
+        ApiErrorResponse response =
+                new ApiErrorResponse(
+                        Instant.now(),
+                        status.value(),
+                        code,
+                        message,
+                        request.getRequestURI(),
+                        correlationId,
+                        errors
+                );
 
         return ResponseEntity
-                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .status(status)
                 .body(response);
     }
 }

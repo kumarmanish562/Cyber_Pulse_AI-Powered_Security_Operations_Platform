@@ -15,7 +15,7 @@ import java.util.UUID;
 
 
 @RestController
-@RequestMapping("/api/risk-assessments")
+@RequestMapping("/api/v1/risk-assessments")
 @RequiredArgsConstructor
 public class RiskAssessmentController {
 

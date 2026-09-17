@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/audit-logs")
+@RequestMapping("/api/v1/audit-logs")
 @RequiredArgsConstructor
 public class AuditLogController {
 

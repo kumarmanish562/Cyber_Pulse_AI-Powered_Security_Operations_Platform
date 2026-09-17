@@ -35,13 +35,24 @@ management:
   endpoint:
     health:
       show-details: when_authorized
+    probes:
+      enabled: true
 
 logging:
   level:
     root: INFO
     com.cyberpulse: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level [corr=%X{correlationId}] %logger{36} - %msg%n"
 
 jwt:
   secret: ${JWT_SECRET:wyv6SnkAf/easwF3mXcCBwVaJ4oflZzqYBmPC08hECcxbKGjSyB9i7rRnrVc+LqwhnlMG9CYoukCkolV6yJ7hA==}
   access-token-expiration: 900000
   refresh-token-expiration: 604800000
+
+cyberpulse:
+  cors:
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:5173}
+
+
+
