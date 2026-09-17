@@ -1,9 +1,9 @@
-package cyberpulse.common.enums;
+package cyberpulse.incident.entity;
 
 public enum IncidentStatus {
 
     OPEN,
-    INVESTIGATION,
+    INVESTIGATING,
     RESOLVED,
     CLOSED
 }

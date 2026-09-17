@@ -7,9 +7,11 @@ import cyberpulse.risk.engine.RiskCalculationResult;
 import cyberpulse.risk.engine.RiskCalculator;
 import cyberpulse.risk.entity.RiskAssessment;
 import cyberpulse.risk.entity.RiskSeverity;
+import cyberpulse.risk.event.RiskAssessmentCreatedEvent;
 import cyberpulse.risk.mapper.RiskAssessmentMapper;
 import cyberpulse.risk.repository.RiskAssessmentRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -32,6 +34,9 @@ public class RiskAssessmentService {
     private final RiskCalculator riskCalculator;
 
     private final RiskAssessmentMapper mapper;
+
+    private final ApplicationEventPublisher
+            applicationEventPublisher;
 
     @Transactional
     public RiskAssessmentResponse assess(
@@ -102,6 +107,12 @@ public class RiskAssessmentService {
                 riskAssessmentRepository.save(
                         assessment
                 );
+
+        applicationEventPublisher.publishEvent(
+                new RiskAssessmentCreatedEvent(
+                        saved.getId()
+                )
+        );
 
         return mapper.toResponse(saved);
     }

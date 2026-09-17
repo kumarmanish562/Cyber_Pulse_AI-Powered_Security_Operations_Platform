@@ -1,6 +1,5 @@
 package cyberpulse.incident.entity;
 
-
 import cyberpulse.user.entity.User;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -19,20 +18,34 @@ public class IncidentNote {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(name = "id", nullable = false)
     private UUID id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "incident_id", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(
+            name = "incident_id",
+            nullable = false
+    )
     private Incident incident;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(
+            name = "user_id",
+            nullable = false
+    )
     private User user;
 
-    @Column(nullable = false, columnDefinition = "TEXT")
+    @Column(
+            name = "note",
+            nullable = false,
+            columnDefinition = "TEXT"
+    )
     private String note;
 
-    @Column(name = "created_at", nullable = false)
+    @Column(
+            name = "created_at",
+            nullable = false
+    )
     private Instant createdAt;
 
     @PrePersist
