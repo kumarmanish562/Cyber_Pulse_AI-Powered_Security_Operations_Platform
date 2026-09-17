@@ -1,4 +1,11 @@
 package cyberpulse.risk.dto;
 
-public class RiskFactorResponse {
+public record RiskFactorResponse(
+
+        String name,
+
+        Integer score,
+
+        String reason
+) {
 }

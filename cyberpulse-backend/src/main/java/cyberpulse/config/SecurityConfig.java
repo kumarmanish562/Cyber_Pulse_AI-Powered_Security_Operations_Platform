@@ -4,11 +4,14 @@ import cyberpulse.auth.security.JwtAuthenticationFilter;
 import cyberpulse.common.exception.RestAccessDeniedHandler;
 import cyberpulse.common.exception.RestAuthenticationEntryPoint;
 import lombok.RequiredArgsConstructor;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
@@ -22,6 +25,14 @@ public class SecurityConfig {
     private final RestAuthenticationEntryPoint authenticationEntryPoint;
 
     private final RestAccessDeniedHandler accessDeniedHandler;
+
+    @Bean
+    @ConditionalOnMissingBean(UserDetailsService.class)
+    public UserDetailsService userDetailsService() {
+        return username -> {
+            throw new UsernameNotFoundException("UserDetailsService not configured");
+        };
+    }
 
     @Bean
     public SecurityFilterChain securityFilterChain(

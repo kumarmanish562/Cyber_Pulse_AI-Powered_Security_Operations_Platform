@@ -1,5 +1,6 @@
 package cyberpulse.event.service;
 
+import cyberpulse.detection.engine.DetectionEngine;
 import cyberpulse.event.dto.CreateSecurityEventRequest;
 import cyberpulse.event.dto.SecurityEventFilter;
 import cyberpulse.event.dto.SecurityEventResponse;
@@ -25,12 +26,17 @@ public class SecurityEventService {
     private final SecurityEventRepository eventRepository;
     private final SecurityEventMapper eventMapper;
 
+    private final DetectionEngine detectionEngine;
+
+
     public SecurityEventService(
             SecurityEventRepository eventRepository,
-            SecurityEventMapper eventMapper
+            SecurityEventMapper eventMapper,
+            DetectionEngine detectionEngine
     ) {
         this.eventRepository = eventRepository;
         this.eventMapper = eventMapper;
+        this.detectionEngine = detectionEngine;
     }
 
     @Transactional
@@ -45,6 +51,8 @@ public class SecurityEventService {
 
         SecurityEvent savedEvent =
                 eventRepository.save(event);
+
+        detectionEngine.analyze(savedEvent);
 
         return eventMapper.toResponse(savedEvent);
     }

@@ -4,6 +4,7 @@ import cyberpulse.detection.entity.DetectionRule;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 public interface DetectionRuleRepository
@@ -11,5 +12,11 @@ public interface DetectionRuleRepository
 
     List<DetectionRule> findByEnabledTrue();
 
-    boolean existsByNameIgnoreCase(String name);
+    Optional<DetectionRule> findByNameIgnoreCase(
+            String name
+    );
+
+    boolean existsByNameIgnoreCase(
+            String name
+    );
 }

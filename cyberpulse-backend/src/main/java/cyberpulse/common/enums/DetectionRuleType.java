@@ -1,4 +1,8 @@
 package cyberpulse.common.enums;
 
-public class DetectionRuleType {
+public enum DetectionRuleType {
+
+    BRUTE_FORCE,
+    SUSPICIOUS_LOGIN,
+    PORT_SCAN
 }

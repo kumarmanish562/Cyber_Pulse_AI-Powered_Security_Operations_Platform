@@ -1,7 +1,6 @@
 package cyberpulse.risk.entity;
 
 
-import cyberpulse.common.enums.Severity;
 import cyberpulse.detection.entity.ThreatDetection;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -15,7 +14,29 @@ import java.util.Map;
 import java.util.UUID;
 
 @Entity
-@Table(name = "risk_assessments")
+@Table(
+        name = "risk_assessments",
+        uniqueConstraints = {
+                @UniqueConstraint(
+                        name = "uk_risk_assessment_detection",
+                        columnNames = "threat_detection_id"
+                )
+        },
+        indexes = {
+                @Index(
+                        name = "idx_risk_assessments_severity",
+                        columnList = "severity"
+                ),
+                @Index(
+                        name = "idx_risk_assessments_assessed_at",
+                        columnList = "assessed_at"
+                ),
+                @Index(
+                        name = "idx_risk_assessments_score",
+                        columnList = "risk_score"
+                )
+        }
+)
 @Getter
 @Setter
 @NoArgsConstructor
@@ -25,26 +46,66 @@ public class RiskAssessment {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "detection_id", nullable = false)
-    private ThreatDetection detection;
+    @OneToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(
+            name = "threat_detection_id",
+            nullable = false,
+            unique = true
+    )
+    private ThreatDetection threatDetection;
 
-    @Column(name = "risk_score", nullable = false)
+    @Column(
+            name = "risk_score",
+            nullable = false
+    )
     private Integer riskScore;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 20)
-    private Severity severity;
+    @Column(
+            nullable = false,
+            length = 20
+    )
+    private RiskSeverity severity;
+
+    @Column(
+            name = "base_score",
+            nullable = false
+    )
+    private Integer baseScore;
+
+    @Column(
+            name = "confidence_score",
+            nullable = false
+    )
+    private Integer confidenceScore;
+
+    @Column(
+            name = "frequency_score",
+            nullable = false
+    )
+    private Integer frequencyScore;
+
+    @Column(
+            name = "severity_score",
+            nullable = false
+    )
+    private Integer severityScore;
 
     @JdbcTypeCode(SqlTypes.JSON)
-    @Column(columnDefinition = "jsonb")
+    @Column(
+            columnDefinition = "jsonb"
+    )
     private Map<String, Object> factors;
 
-    @Column(name = "created_at", nullable = false)
-    private Instant createdAt;
+    @Column(
+            name = "assessed_at",
+            nullable = false,
+            updatable = false
+    )
+    private Instant assessedAt;
 
     @PrePersist
     protected void onCreate() {
-        createdAt = Instant.now();
+        assessedAt = Instant.now();
     }
 }

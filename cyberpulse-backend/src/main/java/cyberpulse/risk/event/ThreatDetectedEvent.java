@@ -1,4 +1,8 @@
 package cyberpulse.risk.event;
 
-public class ThreatDetectedEvent {
+import java.util.UUID;
+
+public record ThreatDetectedEvent(
+        UUID threatDetectionId
+) {
 }

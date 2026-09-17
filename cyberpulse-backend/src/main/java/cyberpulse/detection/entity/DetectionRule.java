@@ -1,6 +1,7 @@
 package cyberpulse.detection.entity;
 
 
+import cyberpulse.common.enums.DetectionRuleType;
 import cyberpulse.common.enums.Severity;
 import cyberpulse.user.entity.User;
 import jakarta.persistence.*;
@@ -11,9 +12,14 @@ import lombok.Setter;
 import java.time.Instant;
 import java.util.UUID;
 
-
 @Entity
-@Table(name = "detection_rules")
+@Table(
+        name = "detection_rules",
+        uniqueConstraints = @UniqueConstraint(
+                name = "uk_detection_rules_name",
+                columnNames = "name"
+        )
+)
 @Getter
 @Setter
 @NoArgsConstructor
@@ -23,17 +29,28 @@ public class DetectionRule {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @Column(nullable = false, length = 100)
+    @Column(
+            nullable = false,
+            length = 100
+    )
     private String name;
 
-    @Column(name = "rule_type", nullable = false, length = 50)
-    private String ruleType;
+    @Enumerated(EnumType.STRING)
+    @Column(
+            name = "rule_type",
+            nullable = false,
+            length = 50
+    )
+    private DetectionRuleType ruleType;
 
     @Column(columnDefinition = "TEXT")
     private String description;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 20)
+    @Column(
+            nullable = false,
+            length = 20
+    )
     private Severity severity;
 
     @Column(name = "threshold_value")
@@ -49,10 +66,17 @@ public class DetectionRule {
     @JoinColumn(name = "created_by")
     private User createdBy;
 
-    @Column(name = "created_at", nullable = false)
+    @Column(
+            name = "created_at",
+            nullable = false,
+            updatable = false
+    )
     private Instant createdAt;
 
-    @Column(name = "updated_at", nullable = false)
+    @Column(
+            name = "updated_at",
+            nullable = false
+    )
     private Instant updatedAt;
 
     @PrePersist

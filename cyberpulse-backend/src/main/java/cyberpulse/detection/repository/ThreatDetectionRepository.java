@@ -1,6 +1,8 @@
 package cyberpulse.detection.repository;
 
 import cyberpulse.detection.entity.ThreatDetection;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 
@@ -12,5 +14,9 @@ public interface ThreatDetectionRepository
     boolean existsByRuleIdAndEventId(
             UUID ruleId,
             UUID eventId
+    );
+
+    Page<ThreatDetection> findAllByOrderByCreatedAtDesc(
+            Pageable pageable
     );
 }

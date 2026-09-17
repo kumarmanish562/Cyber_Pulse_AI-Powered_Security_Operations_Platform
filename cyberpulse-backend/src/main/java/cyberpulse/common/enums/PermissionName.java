@@ -49,4 +49,6 @@ public final class PermissionName {
 
     public static final String NOTIFICATION_READ =
             "NOTIFICATION_READ";
+
+    public static final String RISK_READ = "RISK_READ";
 }

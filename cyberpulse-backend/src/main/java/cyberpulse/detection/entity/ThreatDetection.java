@@ -25,24 +25,44 @@ public class ThreatDetection {
     private UUID id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "rule_id", nullable = false)
+    @JoinColumn(
+            name = "rule_id",
+            nullable = false
+    )
     private DetectionRule rule;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "event_id", nullable = false)
+    @JoinColumn(
+            name = "event_id",
+            nullable = false
+    )
     private SecurityEvent event;
 
-    @Column(name = "threat_type", nullable = false, length = 100)
+    @Column(
+            name = "threat_type",
+            nullable = false,
+            length = 100
+    )
     private String threatType;
 
-    @Column(name = "confidence_score", precision = 5, scale = 2)
+    @Column(
+            name = "confidence_score",
+            precision = 5,
+            scale = 2
+    )
     private BigDecimal confidenceScore;
 
     @JdbcTypeCode(SqlTypes.JSON)
-    @Column(columnDefinition = "jsonb")
+    @Column(
+            columnDefinition = "jsonb"
+    )
     private Map<String, Object> details;
 
-    @Column(name = "created_at", nullable = false)
+    @Column(
+            name = "created_at",
+            nullable = false,
+            updatable = false
+    )
     private Instant createdAt;
 
     @PrePersist

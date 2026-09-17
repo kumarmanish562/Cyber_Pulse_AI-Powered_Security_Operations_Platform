@@ -5,8 +5,8 @@ spring:
 
   datasource:
     url: jdbc:postgresql://localhost:5432/cyberpulse
-    username: ${DB_USERNAME}
-    password: ${DB_PASSWORD}
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:0328}
     driver-class-name: org.postgresql.Driver
 
   jpa:
@@ -42,6 +42,6 @@ logging:
     com.cyberpulse: DEBUG
 
 jwt:
-  secret: ${JWT_SECRET}
+  secret: ${JWT_SECRET:wyv6SnkAf/easwF3mXcCBwVaJ4oflZzqYBmPC08hECcxbKGjSyB9i7rRnrVc+LqwhnlMG9CYoukCkolV6yJ7hA==}
   access-token-expiration: 900000
   refresh-token-expiration: 604800000

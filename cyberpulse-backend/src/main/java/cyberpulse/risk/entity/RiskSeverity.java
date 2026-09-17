@@ -1,4 +1,9 @@
 package cyberpulse.risk.entity;
 
-public class RiskSeverity {
+public enum RiskSeverity {
+
+    LOW,
+    MEDIUM,
+    HIGH,
+    CRITICAL
 }
