@@ -2,24 +2,30 @@ package cyberpulse.incident.service;
 
 import cyberpulse.event.entity.SecurityEvent;
 import cyberpulse.event.repository.SecurityEventRepository;
+
 import cyberpulse.incident.dto.CreateIncidentRequest;
 import cyberpulse.incident.dto.IncidentEventResponse;
 import cyberpulse.incident.dto.IncidentNoteResponse;
 import cyberpulse.incident.dto.IncidentResponse;
+
 import cyberpulse.incident.entity.Incident;
 import cyberpulse.incident.entity.IncidentEvent;
 import cyberpulse.incident.entity.IncidentNote;
 import cyberpulse.incident.entity.IncidentSeverity;
 import cyberpulse.incident.entity.IncidentStatus;
+
 import cyberpulse.incident.mapper.IncidentEventMapper;
 import cyberpulse.incident.mapper.IncidentMapper;
 import cyberpulse.incident.mapper.IncidentNoteMapper;
+
 import cyberpulse.incident.repository.IncidentEventRepository;
 import cyberpulse.incident.repository.IncidentNoteRepository;
 import cyberpulse.incident.repository.IncidentRepository;
+
 import cyberpulse.risk.entity.RiskAssessment;
 import cyberpulse.risk.entity.RiskSeverity;
 import cyberpulse.risk.repository.RiskAssessmentRepository;
+
 import cyberpulse.user.entity.User;
 import cyberpulse.user.repository.UserRepository;
 
@@ -33,6 +39,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import org.springframework.context.ApplicationEventPublisher;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -44,8 +52,9 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
+
 
 /**
  * Unit tests for IncidentService.
@@ -92,8 +101,22 @@ class IncidentServiceTest {
     @Mock
     private UserRepository userRepository;
 
+    /*
+     * PHASE 10
+     *
+     * Required because IncidentService now
+     * publishes application events.
+     */
+    @Mock
+    private ApplicationEventPublisher eventPublisher;
+
+    /*
+     * Mockito automatically injects all mocks
+     * into IncidentService.
+     */
     @InjectMocks
     private IncidentService service;
+
 
     // =========================================================
     // TEST DATA
@@ -115,6 +138,7 @@ class IncidentServiceTest {
     private IncidentNoteResponse noteResponse;
     private IncidentEventResponse eventResponse;
 
+
     // =========================================================
     // SETUP
     // =========================================================
@@ -122,49 +146,115 @@ class IncidentServiceTest {
     @BeforeEach
     void setUp() {
 
-        incidentId = UUID.randomUUID();
-        riskAssessmentId = UUID.randomUUID();
-        userId = UUID.randomUUID();
-        eventId = UUID.randomUUID();
+        incidentId =
+                UUID.randomUUID();
+
+        riskAssessmentId =
+                UUID.randomUUID();
+
+        userId =
+                UUID.randomUUID();
+
+        eventId =
+                UUID.randomUUID();
+
 
         // -----------------------------------------------------
         // Incident
         // -----------------------------------------------------
 
-        incident = new Incident();
+        incident =
+                new Incident();
 
-        incident.setId(incidentId);
-        incident.setIncidentNumber("INC-2026-000001");
-        incident.setTitle("Test Incident");
-        incident.setDescription("Test incident description");
-        incident.setStatus(IncidentStatus.OPEN);
-        incident.setSeverity(IncidentSeverity.HIGH);
-        incident.setAssignedTo(null);
+        incident.setId(
+                incidentId
+        );
+
+        incident.setIncidentNumber(
+                "INC-2026-000001"
+        );
+
+        incident.setTitle(
+                "Test Incident"
+        );
+
+        incident.setDescription(
+                "Test incident description"
+        );
+
+        incident.setStatus(
+                IncidentStatus.OPEN
+        );
+
+        incident.setSeverity(
+                IncidentSeverity.HIGH
+        );
+
+        incident.setAssignedTo(
+                null
+        );
+
 
         // -----------------------------------------------------
         // Risk Assessment
         // -----------------------------------------------------
 
-        assessment = new RiskAssessment();
+        assessment =
+                new RiskAssessment();
 
-        assessment.setId(riskAssessmentId);
-        assessment.setSeverity(RiskSeverity.HIGH);
+        assessment.setId(
+                riskAssessmentId
+        );
+
+        assessment.setSeverity(
+                RiskSeverity.HIGH
+        );
+
+
+        /*
+         * IMPORTANT:
+         *
+         * IncidentService Phase 10 accesses:
+         *
+         * savedIncident
+         *     .getRiskAssessment()
+         *     .getId()
+         *
+         * Therefore the test Incident must have
+         * the RiskAssessment attached.
+         */
+        incident.setRiskAssessment(
+                assessment
+        );
+
 
         // -----------------------------------------------------
         // Security Event
         // -----------------------------------------------------
 
-        event = new SecurityEvent();
+        event =
+                new SecurityEvent();
+
 
         // -----------------------------------------------------
         // User
         // -----------------------------------------------------
 
-        user = new User();
+        user =
+                new User();
 
-        user.setId(userId);
-        user.setUsername(username);
-        user.setEmail("analyst1@cyberpulse.local");
+        user.setId(
+                userId
+        );
+
+        user.setUsername(
+                username
+        );
+
+        user.setEmail(
+                "analyst1@cyberpulse.local"
+        );
+
 
         // -----------------------------------------------------
         // Mapper responses
@@ -180,6 +270,7 @@ class IncidentServiceTest {
                 mock(IncidentEventResponse.class);
     }
 
+
     // =========================================================
     // CREATE INCIDENT
     // =========================================================
@@ -194,38 +285,58 @@ class IncidentServiceTest {
                         "Test incident description"
                 );
 
+
         when(
                 incidentRepository.existsByRiskAssessmentId(
                         riskAssessmentId
                 )
         ).thenReturn(false);
 
+
         when(
                 riskAssessmentRepository.findById(
                         riskAssessmentId
                 )
-        ).thenReturn(Optional.of(assessment));
+        ).thenReturn(
+                Optional.of(assessment)
+        );
+
 
         when(
                 incidentNumberGenerator.next()
-        ).thenReturn("INC-2026-000001");
+        ).thenReturn(
+                "INC-2026-000001"
+        );
+
 
         when(
                 incidentRepository.save(
                         any(Incident.class)
                 )
-        ).thenReturn(incident);
+        ).thenReturn(
+                incident
+        );
+
 
         when(
                 incidentMapper.toResponse(
                         incident
                 )
-        ).thenReturn(incidentResponse);
+        ).thenReturn(
+                incidentResponse
+        );
+
 
         IncidentResponse result =
-                service.createIncident(request);
+                service.createIncident(
+                        request
+                );
 
-        assertNotNull(result);
+
+        assertNotNull(
+                result
+        );
+
 
         verify(
                 incidentRepository
@@ -233,15 +344,18 @@ class IncidentServiceTest {
                 riskAssessmentId
         );
 
+
         verify(
                 riskAssessmentRepository
         ).findById(
                 riskAssessmentId
         );
 
+
         verify(
                 incidentNumberGenerator
         ).next();
+
 
         verify(
                 incidentRepository
@@ -249,12 +363,24 @@ class IncidentServiceTest {
                 any(Incident.class)
         );
 
+
         verify(
                 incidentMapper
         ).toResponse(
                 incident
         );
+
+
+        /*
+         * Phase 10 verification.
+         */
+        verify(
+                eventPublisher
+        ).publishEvent(
+                any(Object.class)
+        );
     }
+
 
     // =========================================================
     // DUPLICATE RISK ASSESSMENT
@@ -270,16 +396,22 @@ class IncidentServiceTest {
                         "Duplicate description"
                 );
 
+
         when(
                 incidentRepository.existsByRiskAssessmentId(
                         riskAssessmentId
                 )
         ).thenReturn(true);
 
+
         assertThrows(
                 IllegalStateException.class,
-                () -> service.createIncident(request)
+                () ->
+                        service.createIncident(
+                                request
+                        )
         );
+
 
         verify(
                 incidentRepository
@@ -287,11 +419,18 @@ class IncidentServiceTest {
                 riskAssessmentId
         );
 
+
         verifyNoInteractions(
                 riskAssessmentRepository,
                 incidentNumberGenerator
         );
+
+
+        verifyNoInteractions(
+                eventPublisher
+        );
     }
+
 
     // =========================================================
     // RISK ASSESSMENT NOT FOUND
@@ -307,22 +446,31 @@ class IncidentServiceTest {
                         "Description"
                 );
 
+
         when(
                 incidentRepository.existsByRiskAssessmentId(
                         riskAssessmentId
                 )
         ).thenReturn(false);
 
+
         when(
                 riskAssessmentRepository.findById(
                         riskAssessmentId
                 )
-        ).thenReturn(Optional.empty());
+        ).thenReturn(
+                Optional.empty()
+        );
+
 
         assertThrows(
                 EntityNotFoundException.class,
-                () -> service.createIncident(request)
+                () ->
+                        service.createIncident(
+                                request
+                        )
         );
+
 
         verify(
                 riskAssessmentRepository
@@ -330,16 +478,26 @@ class IncidentServiceTest {
                 riskAssessmentId
         );
 
+
         verify(
                 incidentRepository,
                 never()
-        ).save(any());
+        ).save(
+                any()
+        );
+
 
         verify(
                 incidentNumberGenerator,
                 never()
         ).next();
+
+
+        verifyNoInteractions(
+                eventPublisher
+        );
     }
+
 
     // =========================================================
     // GET INCIDENT
@@ -352,27 +510,45 @@ class IncidentServiceTest {
                 incidentRepository.findById(
                         incidentId
                 )
-        ).thenReturn(Optional.of(incident));
+        ).thenReturn(
+                Optional.of(incident)
+        );
+
 
         when(
                 incidentMapper.toResponse(
                         incident
                 )
-        ).thenReturn(incidentResponse);
+        ).thenReturn(
+                incidentResponse
+        );
+
 
         IncidentResponse result =
-                service.getById(incidentId);
+                service.getById(
+                        incidentId
+                );
 
-        assertNotNull(result);
+
+        assertNotNull(
+                result
+        );
+
 
         verify(
                 incidentRepository
-        ).findById(incidentId);
+        ).findById(
+                incidentId
+        );
+
 
         verify(
                 incidentMapper
-        ).toResponse(incident);
+        ).toResponse(
+                incident
+        );
     }
+
 
     // =========================================================
     // UNKNOWN INCIDENT
@@ -385,17 +561,27 @@ class IncidentServiceTest {
                 incidentRepository.findById(
                         incidentId
                 )
-        ).thenReturn(Optional.empty());
+        ).thenReturn(
+                Optional.empty()
+        );
+
 
         assertThrows(
                 EntityNotFoundException.class,
-                () -> service.getById(incidentId)
+                () ->
+                        service.getById(
+                                incidentId
+                        )
         );
+
 
         verify(
                 incidentRepository
-        ).findById(incidentId);
+        ).findById(
+                incidentId
+        );
     }
+
 
     // =========================================================
     // GET ALL INCIDENTS
@@ -405,7 +591,11 @@ class IncidentServiceTest {
     void shouldGetAllIncidents() {
 
         PageRequest pageable =
-                PageRequest.of(0, 20);
+                PageRequest.of(
+                        0,
+                        20
+                );
+
 
         Page<Incident> page =
                 new PageImpl<>(
@@ -414,36 +604,56 @@ class IncidentServiceTest {
                         1
                 );
 
+
         when(
                 incidentRepository.findAll(
                         pageable
                 )
-        ).thenReturn(page);
+        ).thenReturn(
+                page
+        );
+
 
         when(
                 incidentMapper.toResponse(
                         incident
                 )
-        ).thenReturn(incidentResponse);
+        ).thenReturn(
+                incidentResponse
+        );
+
 
         Page<IncidentResponse> result =
-                service.getAll(pageable);
+                service.getAll(
+                        pageable
+                );
 
-        assertNotNull(result);
+
+        assertNotNull(
+                result
+        );
+
 
         assertEquals(
                 1,
                 result.getTotalElements()
         );
 
+
         verify(
                 incidentRepository
-        ).findAll(pageable);
+        ).findAll(
+                pageable
+        );
+
 
         verify(
                 incidentMapper
-        ).toResponse(incident);
+        ).toResponse(
+                incident
+        );
     }
+
 
     // =========================================================
     // OPEN -> INVESTIGATING
@@ -456,23 +666,33 @@ class IncidentServiceTest {
                 IncidentStatus.OPEN
         );
 
+
         when(
                 incidentRepository.findById(
                         incidentId
                 )
-        ).thenReturn(Optional.of(incident));
+        ).thenReturn(
+                Optional.of(incident)
+        );
+
 
         when(
                 incidentRepository.save(
                         incident
                 )
-        ).thenReturn(incident);
+        ).thenReturn(
+                incident
+        );
+
 
         when(
                 incidentMapper.toResponse(
                         incident
                 )
-        ).thenReturn(incidentResponse);
+        ).thenReturn(
+                incidentResponse
+        );
+
 
         IncidentResponse result =
                 service.updateStatus(
@@ -480,21 +700,42 @@ class IncidentServiceTest {
                         IncidentStatus.INVESTIGATING
                 );
 
-        assertNotNull(result);
+
+        assertNotNull(
+                result
+        );
+
 
         assertEquals(
                 IncidentStatus.INVESTIGATING,
                 incident.getStatus()
         );
 
+
         verify(
                 incidentRepository
-        ).save(incident);
+        ).save(
+                incident
+        );
+
 
         verify(
                 incidentMapper
-        ).toResponse(incident);
+        ).toResponse(
+                incident
+        );
+
+
+        /*
+         * Phase 10.
+         */
+        verify(
+                eventPublisher
+        ).publishEvent(
+                any(Object.class)
+        );
     }
+
 
     // =========================================================
     // INVESTIGATING -> RESOLVED
@@ -507,23 +748,33 @@ class IncidentServiceTest {
                 IncidentStatus.INVESTIGATING
         );
 
+
         when(
                 incidentRepository.findById(
                         incidentId
                 )
-        ).thenReturn(Optional.of(incident));
+        ).thenReturn(
+                Optional.of(incident)
+        );
+
 
         when(
                 incidentRepository.save(
                         incident
                 )
-        ).thenReturn(incident);
+        ).thenReturn(
+                incident
+        );
+
 
         when(
                 incidentMapper.toResponse(
                         incident
                 )
-        ).thenReturn(incidentResponse);
+        ).thenReturn(
+                incidentResponse
+        );
+
 
         IncidentResponse result =
                 service.updateStatus(
@@ -531,21 +782,37 @@ class IncidentServiceTest {
                         IncidentStatus.RESOLVED
                 );
 
-        assertNotNull(result);
+
+        assertNotNull(
+                result
+        );
+
 
         assertEquals(
                 IncidentStatus.RESOLVED,
                 incident.getStatus()
         );
 
+
         assertNotNull(
                 incident.getResolvedAt()
         );
 
+
         verify(
                 incidentRepository
-        ).save(incident);
+        ).save(
+                incident
+        );
+
+
+        verify(
+                eventPublisher
+        ).publishEvent(
+                any(Object.class)
+        );
     }
+
 
     // =========================================================
     // RESOLVED -> CLOSED
@@ -558,27 +825,38 @@ class IncidentServiceTest {
                 IncidentStatus.RESOLVED
         );
 
+
         incident.setResolvedAt(
                 Instant.now()
         );
+
 
         when(
                 incidentRepository.findById(
                         incidentId
                 )
-        ).thenReturn(Optional.of(incident));
+        ).thenReturn(
+                Optional.of(incident)
+        );
+
 
         when(
                 incidentRepository.save(
                         incident
                 )
-        ).thenReturn(incident);
+        ).thenReturn(
+                incident
+        );
+
 
         when(
                 incidentMapper.toResponse(
                         incident
                 )
-        ).thenReturn(incidentResponse);
+        ).thenReturn(
+                incidentResponse
+        );
+
 
         IncidentResponse result =
                 service.updateStatus(
@@ -586,21 +864,37 @@ class IncidentServiceTest {
                         IncidentStatus.CLOSED
                 );
 
-        assertNotNull(result);
+
+        assertNotNull(
+                result
+        );
+
 
         assertEquals(
                 IncidentStatus.CLOSED,
                 incident.getStatus()
         );
 
+
         assertNotNull(
                 incident.getClosedAt()
         );
 
+
         verify(
                 incidentRepository
-        ).save(incident);
+        ).save(
+                incident
+        );
+
+
+        verify(
+                eventPublisher
+        ).publishEvent(
+                any(Object.class)
+        );
     }
+
 
     // =========================================================
     // OPEN -> CLOSED REJECTED
@@ -613,25 +907,39 @@ class IncidentServiceTest {
                 IncidentStatus.OPEN
         );
 
+
         when(
                 incidentRepository.findById(
                         incidentId
                 )
-        ).thenReturn(Optional.of(incident));
+        ).thenReturn(
+                Optional.of(incident)
+        );
+
 
         assertThrows(
                 IllegalStateException.class,
-                () -> service.updateStatus(
-                        incidentId,
-                        IncidentStatus.CLOSED
-                )
+                () ->
+                        service.updateStatus(
+                                incidentId,
+                                IncidentStatus.CLOSED
+                        )
         );
+
 
         verify(
                 incidentRepository,
                 never()
-        ).save(any());
+        ).save(
+                any()
+        );
+
+
+        verifyNoInteractions(
+                eventPublisher
+        );
     }
+
 
     // =========================================================
     // CLOSED -> OPEN REJECTED
@@ -644,25 +952,39 @@ class IncidentServiceTest {
                 IncidentStatus.CLOSED
         );
 
+
         when(
                 incidentRepository.findById(
                         incidentId
                 )
-        ).thenReturn(Optional.of(incident));
+        ).thenReturn(
+                Optional.of(incident)
+        );
+
 
         assertThrows(
                 IllegalStateException.class,
-                () -> service.updateStatus(
-                        incidentId,
-                        IncidentStatus.OPEN
-                )
+                () ->
+                        service.updateStatus(
+                                incidentId,
+                                IncidentStatus.OPEN
+                        )
         );
+
 
         verify(
                 incidentRepository,
                 never()
-        ).save(any());
+        ).save(
+                any()
+        );
+
+
+        verifyNoInteractions(
+                eventPublisher
+        );
     }
+
 
     // =========================================================
     // SAME STATUS REJECTED
@@ -675,60 +997,82 @@ class IncidentServiceTest {
                 IncidentStatus.OPEN
         );
 
+
         when(
                 incidentRepository.findById(
                         incidentId
                 )
-        ).thenReturn(Optional.of(incident));
+        ).thenReturn(
+                Optional.of(incident)
+        );
+
 
         assertThrows(
                 IllegalStateException.class,
-                () -> service.updateStatus(
-                        incidentId,
-                        IncidentStatus.OPEN
-                )
+                () ->
+                        service.updateStatus(
+                                incidentId,
+                                IncidentStatus.OPEN
+                        )
         );
+
 
         verify(
                 incidentRepository,
                 never()
-        ).save(any());
+        ).save(
+                any()
+        );
+
+
+        verifyNoInteractions(
+                eventPublisher
+        );
     }
 
+
     // =========================================================
-// ASSIGN INCIDENT
-// =========================================================
+    // ASSIGN INCIDENT
+    // =========================================================
 
     @Test
     void shouldAssignIncident() {
 
         when(
-                incidentRepository.findById(incidentId)
+                incidentRepository.findById(
+                        incidentId
+                )
         ).thenReturn(
                 Optional.of(incident)
         );
 
+
         when(
-                userRepository.findById(userId)
+                userRepository.findById(
+                        userId
+                )
         ).thenReturn(
                 Optional.of(user)
         );
 
-        // IMPORTANT:
-        // assignIncident() saves the updated incident
+
         when(
-                incidentRepository.save(incident)
+                incidentRepository.save(
+                        incident
+                )
         ).thenReturn(
                 incident
         );
 
-        // IMPORTANT:
-        // assignIncident() returns IncidentResponse
+
         when(
-                incidentMapper.toResponse(incident)
+                incidentMapper.toResponse(
+                        incident
+                )
         ).thenReturn(
                 incidentResponse
         );
+
 
         IncidentResponse response =
                 service.assignIncident(
@@ -736,34 +1080,57 @@ class IncidentServiceTest {
                         userId
                 );
 
-        assertNotNull(response);
 
-        // Verify incident lookup
+        assertNotNull(
+                response
+        );
+
+
         verify(
                 incidentRepository
-        ).findById(incidentId);
+        ).findById(
+                incidentId
+        );
 
-        // Verify user lookup
+
         verify(
                 userRepository
-        ).findById(userId);
+        ).findById(
+                userId
+        );
 
-        // Verify assignment happened
+
         assertEquals(
                 userId,
                 incident.getAssignedTo()
         );
 
-        // Verify save
+
         verify(
                 incidentRepository
-        ).save(incident);
+        ).save(
+                incident
+        );
 
-        // Verify response mapping
+
         verify(
                 incidentMapper
-        ).toResponse(incident);
+        ).toResponse(
+                incident
+        );
+
+
+        /*
+         * Phase 10.
+         */
+        verify(
+                eventPublisher
+        ).publishEvent(
+                any(Object.class)
+        );
     }
+
+
     // =========================================================
     // CLOSED INCIDENT CANNOT BE ASSIGNED
     // =========================================================
@@ -775,30 +1142,42 @@ class IncidentServiceTest {
                 IncidentStatus.CLOSED
         );
 
+
         when(
                 incidentRepository.findById(
                         incidentId
                 )
-        ).thenReturn(Optional.of(incident));
+        ).thenReturn(
+                Optional.of(incident)
+        );
+
 
         assertThrows(
                 IllegalStateException.class,
-                () -> service.assignIncident(
-                        incidentId,
-                        userId
-                )
+                () ->
+                        service.assignIncident(
+                                incidentId,
+                                userId
+                        )
         );
+
 
         verify(
                 incidentRepository,
                 never()
-        ).save(any());
+        ).save(
+                any()
+        );
+
+
+        verifyNoInteractions(
+                eventPublisher
+        );
     }
+
 
     // =========================================================
     // ADD NOTE
-    // IMPORTANT:
-    // Current service uses username, not UUID.
     // =========================================================
 
     @Test
@@ -807,32 +1186,46 @@ class IncidentServiceTest {
         String noteText =
                 "Investigation confirmed suspicious activity.";
 
+
         IncidentNote note =
                 new IncidentNote();
+
 
         when(
                 incidentRepository.findById(
                         incidentId
                 )
-        ).thenReturn(Optional.of(incident));
+        ).thenReturn(
+                Optional.of(incident)
+        );
+
 
         when(
                 userRepository.findByUsernameIgnoreCase(
                         username
                 )
-        ).thenReturn(Optional.of(user));
+        ).thenReturn(
+                Optional.of(user)
+        );
+
 
         when(
                 incidentNoteRepository.save(
                         any(IncidentNote.class)
                 )
-        ).thenReturn(note);
+        ).thenReturn(
+                note
+        );
+
 
         when(
                 incidentNoteMapper.toResponse(
                         note
                 )
-        ).thenReturn(noteResponse);
+        ).thenReturn(
+                noteResponse
+        );
+
 
         IncidentNoteResponse result =
                 service.addNote(
@@ -841,15 +1234,25 @@ class IncidentServiceTest {
                         noteText
                 );
 
-        assertNotNull(result);
+
+        assertNotNull(
+                result
+        );
+
 
         verify(
                 incidentRepository
-        ).findById(incidentId);
+        ).findById(
+                incidentId
+        );
+
 
         verify(
                 userRepository
-        ).findByUsernameIgnoreCase(username);
+        ).findByUsernameIgnoreCase(
+                username
+        );
+
 
         verify(
                 incidentNoteRepository
@@ -857,10 +1260,24 @@ class IncidentServiceTest {
                 any(IncidentNote.class)
         );
 
+
         verify(
                 incidentNoteMapper
-        ).toResponse(note);
+        ).toResponse(
+                note
+        );
+
+
+        /*
+         * Phase 10.
+         */
+        verify(
+                eventPublisher
+        ).publishEvent(
+                any(Object.class)
+        );
     }
+
 
     // =========================================================
     // CLOSED INCIDENT CANNOT RECEIVE NOTE
@@ -873,31 +1290,48 @@ class IncidentServiceTest {
                 IncidentStatus.CLOSED
         );
 
+
         when(
                 incidentRepository.findById(
                         incidentId
                 )
-        ).thenReturn(Optional.of(incident));
+        ).thenReturn(
+                Optional.of(incident)
+        );
+
 
         assertThrows(
                 IllegalStateException.class,
-                () -> service.addNote(
-                        incidentId,
-                        username,
-                        "Test note"
-                )
+                () ->
+                        service.addNote(
+                                incidentId,
+                                username,
+                                "Test note"
+                        )
         );
+
 
         verify(
                 userRepository,
                 never()
-        ).findByUsernameIgnoreCase(anyString());
+        ).findByUsernameIgnoreCase(
+                anyString()
+        );
+
 
         verify(
                 incidentNoteRepository,
                 never()
-        ).save(any());
+        ).save(
+                any()
+        );
+
+
+        verifyNoInteractions(
+                eventPublisher
+        );
     }
+
 
     // =========================================================
     // GET NOTES
@@ -909,11 +1343,15 @@ class IncidentServiceTest {
         IncidentNote note =
                 new IncidentNote();
 
+
         when(
                 incidentRepository.findById(
                         incidentId
                 )
-        ).thenReturn(Optional.of(incident));
+        ).thenReturn(
+                Optional.of(incident)
+        );
+
 
         when(
                 incidentNoteRepository
@@ -924,21 +1362,32 @@ class IncidentServiceTest {
                 List.of(note)
         );
 
+
         when(
                 incidentNoteMapper.toResponse(
                         note
                 )
-        ).thenReturn(noteResponse);
+        ).thenReturn(
+                noteResponse
+        );
+
 
         List<IncidentNoteResponse> result =
-                service.getNotes(incidentId);
+                service.getNotes(
+                        incidentId
+                );
 
-        assertNotNull(result);
+
+        assertNotNull(
+                result
+        );
+
 
         assertEquals(
                 1,
                 result.size()
         );
+
 
         verify(
                 incidentNoteRepository
@@ -946,10 +1395,14 @@ class IncidentServiceTest {
                 incidentId
         );
 
+
         verify(
                 incidentNoteMapper
-        ).toResponse(note);
+        ).toResponse(
+                note
+        );
     }
+
 
     // =========================================================
     // ADD EVENT
@@ -961,17 +1414,24 @@ class IncidentServiceTest {
         IncidentEvent incidentEvent =
                 new IncidentEvent();
 
+
         when(
                 incidentRepository.findById(
                         incidentId
                 )
-        ).thenReturn(Optional.of(incident));
+        ).thenReturn(
+                Optional.of(incident)
+        );
+
 
         when(
                 securityEventRepository.findById(
                         eventId
                 )
-        ).thenReturn(Optional.of(event));
+        ).thenReturn(
+                Optional.of(event)
+        );
+
 
         when(
                 incidentEventRepository
@@ -981,17 +1441,24 @@ class IncidentServiceTest {
                         )
         ).thenReturn(false);
 
+
         when(
                 incidentEventRepository.save(
                         any(IncidentEvent.class)
                 )
-        ).thenReturn(incidentEvent);
+        ).thenReturn(
+                incidentEvent
+        );
+
 
         when(
                 incidentEventMapper.toResponse(
                         incidentEvent
                 )
-        ).thenReturn(eventResponse);
+        ).thenReturn(
+                eventResponse
+        );
+
 
         IncidentEventResponse result =
                 service.addEvent(
@@ -999,11 +1466,18 @@ class IncidentServiceTest {
                         eventId
                 );
 
-        assertNotNull(result);
+
+        assertNotNull(
+                result
+        );
+
 
         verify(
                 securityEventRepository
-        ).findById(eventId);
+        ).findById(
+                eventId
+        );
+
 
         verify(
                 incidentEventRepository
@@ -1012,12 +1486,14 @@ class IncidentServiceTest {
                 eventId
         );
 
+
         verify(
                 incidentEventRepository
         ).save(
                 any(IncidentEvent.class)
         );
     }
+
 
     // =========================================================
     // DUPLICATE EVENT
@@ -1030,13 +1506,19 @@ class IncidentServiceTest {
                 incidentRepository.findById(
                         incidentId
                 )
-        ).thenReturn(Optional.of(incident));
+        ).thenReturn(
+                Optional.of(incident)
+        );
+
 
         when(
                 securityEventRepository.findById(
                         eventId
                 )
-        ).thenReturn(Optional.of(event));
+        ).thenReturn(
+                Optional.of(event)
+        );
+
 
         when(
                 incidentEventRepository
@@ -1046,19 +1528,25 @@ class IncidentServiceTest {
                         )
         ).thenReturn(true);
 
+
         assertThrows(
                 IllegalStateException.class,
-                () -> service.addEvent(
-                        incidentId,
-                        eventId
-                )
+                () ->
+                        service.addEvent(
+                                incidentId,
+                                eventId
+                        )
         );
+
 
         verify(
                 incidentEventRepository,
                 never()
-        ).save(any());
+        ).save(
+                any()
+        );
     }
+
 
     // =========================================================
     // UNKNOWN SECURITY EVENT
@@ -1071,27 +1559,38 @@ class IncidentServiceTest {
                 incidentRepository.findById(
                         incidentId
                 )
-        ).thenReturn(Optional.of(incident));
+        ).thenReturn(
+                Optional.of(incident)
+        );
+
 
         when(
                 securityEventRepository.findById(
                         eventId
                 )
-        ).thenReturn(Optional.empty());
+        ).thenReturn(
+                Optional.empty()
+        );
+
 
         assertThrows(
                 EntityNotFoundException.class,
-                () -> service.addEvent(
-                        incidentId,
-                        eventId
-                )
+                () ->
+                        service.addEvent(
+                                incidentId,
+                                eventId
+                        )
         );
+
 
         verify(
                 incidentEventRepository,
                 never()
-        ).save(any());
+        ).save(
+                any()
+        );
     }
+
 
     // =========================================================
     // GET EVENTS
@@ -1103,11 +1602,15 @@ class IncidentServiceTest {
         IncidentEvent incidentEvent =
                 new IncidentEvent();
 
+
         when(
                 incidentRepository.findById(
                         incidentId
                 )
-        ).thenReturn(Optional.of(incident));
+        ).thenReturn(
+                Optional.of(incident)
+        );
+
 
         when(
                 incidentEventRepository.findByIncident_Id(
@@ -1117,28 +1620,44 @@ class IncidentServiceTest {
                 List.of(incidentEvent)
         );
 
+
         when(
                 incidentEventMapper.toResponse(
                         incidentEvent
                 )
-        ).thenReturn(eventResponse);
+        ).thenReturn(
+                eventResponse
+        );
+
 
         List<IncidentEventResponse> result =
-                service.getEvents(incidentId);
+                service.getEvents(
+                        incidentId
+                );
 
-        assertNotNull(result);
+
+        assertNotNull(
+                result
+        );
+
 
         assertEquals(
                 1,
                 result.size()
         );
 
+
         verify(
                 incidentEventRepository
-        ).findByIncident_Id(incidentId);
+        ).findByIncident_Id(
+                incidentId
+        );
+
 
         verify(
                 incidentEventMapper
-        ).toResponse(incidentEvent);
+        ).toResponse(
+                incidentEvent
+        );
     }
 }

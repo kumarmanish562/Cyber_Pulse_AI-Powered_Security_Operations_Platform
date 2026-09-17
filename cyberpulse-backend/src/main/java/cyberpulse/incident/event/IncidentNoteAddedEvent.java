@@ -1,4 +1,12 @@
 package cyberpulse.incident.event;
 
-public class IncidentNoteAddedEvent {
+import java.util.UUID;
+
+public record IncidentNoteAddedEvent(
+
+        UUID incidentId,
+
+        UUID noteId
+
+) {
 }

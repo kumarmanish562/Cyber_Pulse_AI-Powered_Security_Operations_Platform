@@ -1,4 +1,16 @@
 package cyberpulse.incident.event;
 
-public class IncidentCreatedEvent {
+import java.util.UUID;
+
+public record IncidentCreatedEvent(
+
+        UUID incidentId,
+
+        UUID riskAssessmentId,
+
+        Integer riskScore,
+
+        String severity
+
+) {
 }

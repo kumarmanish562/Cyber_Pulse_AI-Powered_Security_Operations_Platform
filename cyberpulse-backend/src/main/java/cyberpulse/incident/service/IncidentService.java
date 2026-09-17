@@ -1,31 +1,49 @@
 package cyberpulse.incident.service;
 
 import cyberpulse.common.exception.ResourceNotFoundException;
+
 import cyberpulse.event.entity.SecurityEvent;
 import cyberpulse.event.repository.SecurityEventRepository;
+
 import cyberpulse.incident.dto.CreateIncidentRequest;
 import cyberpulse.incident.dto.IncidentEventResponse;
 import cyberpulse.incident.dto.IncidentNoteResponse;
 import cyberpulse.incident.dto.IncidentResponse;
+
 import cyberpulse.incident.entity.Incident;
 import cyberpulse.incident.entity.IncidentEvent;
 import cyberpulse.incident.entity.IncidentNote;
 import cyberpulse.incident.entity.IncidentSeverity;
 import cyberpulse.incident.entity.IncidentStatus;
+
+import cyberpulse.incident.event.IncidentAssignedEvent;
+import cyberpulse.incident.event.IncidentCreatedEvent;
+import cyberpulse.incident.event.IncidentNoteAddedEvent;
+import cyberpulse.incident.event.IncidentStatusChangedEvent;
+
 import cyberpulse.incident.mapper.IncidentEventMapper;
 import cyberpulse.incident.mapper.IncidentMapper;
 import cyberpulse.incident.mapper.IncidentNoteMapper;
+
 import cyberpulse.incident.repository.IncidentEventRepository;
 import cyberpulse.incident.repository.IncidentNoteRepository;
 import cyberpulse.incident.repository.IncidentRepository;
+
 import cyberpulse.risk.entity.RiskAssessment;
 import cyberpulse.risk.repository.RiskAssessmentRepository;
+
 import cyberpulse.user.entity.User;
 import cyberpulse.user.repository.UserRepository;
+
 import jakarta.persistence.EntityNotFoundException;
+
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.context.ApplicationEventPublisher;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,20 +51,38 @@ import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
+
 @Service
 @RequiredArgsConstructor
 public class IncidentService {
 
     private final IncidentRepository incidentRepository;
+
     private final RiskAssessmentRepository riskAssessmentRepository;
+
     private final IncidentEventRepository incidentEventRepository;
+
     private final IncidentNoteRepository incidentNoteRepository;
+
     private final SecurityEventRepository securityEventRepository;
+
     private final UserRepository userRepository;
+
     private final IncidentNumberGenerator incidentNumberGenerator;
+
     private final IncidentMapper incidentMapper;
+
     private final IncidentEventMapper incidentEventMapper;
+
     private final IncidentNoteMapper incidentNoteMapper;
+
+    /*
+     * Publishes application/domain events.
+     *
+     * Phase 10:
+     * These events are consumed by audit listeners.
+     */
+    private final ApplicationEventPublisher eventPublisher;
 
 
     // =========================================================
@@ -58,10 +94,13 @@ public class IncidentService {
             CreateIncidentRequest request
     ) {
 
-        UUID riskAssessmentId = request.riskAssessmentId();
+        UUID riskAssessmentId =
+                request.riskAssessmentId();
+
 
         /*
-         * One RiskAssessment can create only one Incident.
+         * One RiskAssessment can create
+         * only one Incident.
          */
         if (incidentRepository.existsByRiskAssessmentId(
                 riskAssessmentId
@@ -72,8 +111,9 @@ public class IncidentService {
             );
         }
 
+
         /*
-         * Load the RiskAssessment.
+         * Load RiskAssessment.
          */
         RiskAssessment assessment =
                 riskAssessmentRepository
@@ -85,40 +125,80 @@ public class IncidentService {
                                 )
                         );
 
+
         /*
          * Create Incident.
          */
-        Incident incident = new Incident();
+        Incident incident =
+                new Incident();
+
 
         incident.setIncidentNumber(
                 incidentNumberGenerator.next()
         );
 
+
         incident.setTitle(
                 request.title()
         );
+
 
         incident.setDescription(
                 request.description()
         );
 
+
         incident.setStatus(
                 IncidentStatus.OPEN
         );
+
 
         incident.setSeverity(
                 mapSeverity(assessment)
         );
 
+
         incident.setRiskAssessment(
                 assessment
         );
 
+
         /*
-         * Save.
+         * Save Incident.
          */
         Incident savedIncident =
-                incidentRepository.save(incident);
+                incidentRepository.save(
+                        incident
+                );
+
+
+        /*
+         * =====================================================
+         * PHASE 10
+         * INCIDENT CREATED EVENT
+         * =====================================================
+         *
+         * This event will be consumed by
+         * IncidentCreatedAuditListener.
+         */
+        eventPublisher.publishEvent(
+                new IncidentCreatedEvent(
+                        savedIncident.getId(),
+
+                        savedIncident
+                                .getRiskAssessment()
+                                .getId(),
+
+                        savedIncident
+                                .getRiskAssessment()
+                                .getRiskScore(),
+
+                        savedIncident
+                                .getSeverity()
+                                .name()
+                )
+        );
+
 
         return incidentMapper.toResponse(
                 savedIncident
@@ -155,13 +235,16 @@ public class IncidentService {
 
         Incident incident =
                 incidentRepository
-                        .findByIncidentNumber(incidentNumber)
+                        .findByIncidentNumber(
+                                incidentNumber
+                        )
                         .orElseThrow(() ->
                                 new EntityNotFoundException(
                                         "Incident not found: "
                                                 + incidentNumber
                                 )
                         );
+
 
         return incidentMapper.toResponse(
                 incident
@@ -180,7 +263,9 @@ public class IncidentService {
 
         return incidentRepository
                 .findAll(pageable)
-                .map(incidentMapper::toResponse);
+                .map(
+                        incidentMapper::toResponse
+                );
     }
 
 
@@ -199,7 +284,9 @@ public class IncidentService {
                         status,
                         pageable
                 )
-                .map(incidentMapper::toResponse);
+                .map(
+                        incidentMapper::toResponse
+                );
     }
 
 
@@ -218,7 +305,9 @@ public class IncidentService {
                         severity,
                         pageable
                 )
-                .map(incidentMapper::toResponse);
+                .map(
+                        incidentMapper::toResponse
+                );
     }
 
 
@@ -235,19 +324,27 @@ public class IncidentService {
         Incident incident =
                 findIncident(incidentId);
 
+
+        /*
+         * Capture OLD status before
+         * changing the incident.
+         */
         IncidentStatus currentStatus =
                 incident.getStatus();
 
+
         /*
-         * Validate lifecycle transition.
+         * Validate transition.
          */
         validateTransition(
                 currentStatus,
                 newStatus
         );
 
+
         Instant now =
                 Instant.now();
+
 
         /*
          * Update status.
@@ -256,20 +353,24 @@ public class IncidentService {
                 newStatus
         );
 
+
         /*
-         * RESOLVED timestamp.
+         * Set resolved timestamp.
          */
-        if (newStatus == IncidentStatus.RESOLVED) {
+        if (newStatus ==
+                IncidentStatus.RESOLVED) {
 
             incident.setResolvedAt(
                     now
             );
         }
 
+
         /*
-         * CLOSED timestamp.
+         * Set closed timestamp.
          */
-        if (newStatus == IncidentStatus.CLOSED) {
+        if (newStatus ==
+                IncidentStatus.CLOSED) {
 
             if (incident.getResolvedAt() == null) {
 
@@ -278,15 +379,38 @@ public class IncidentService {
                 );
             }
 
+
             incident.setClosedAt(
                     now
             );
         }
 
+
+        /*
+         * Save Incident.
+         */
         Incident savedIncident =
                 incidentRepository.save(
                         incident
                 );
+
+
+        /*
+         * =====================================================
+         * PHASE 10
+         * INCIDENT STATUS CHANGED EVENT
+         * =====================================================
+         */
+        eventPublisher.publishEvent(
+                new IncidentStatusChangedEvent(
+                        savedIncident.getId(),
+
+                        currentStatus,
+
+                        newStatus
+                )
+        );
+
 
         return incidentMapper.toResponse(
                 savedIncident
@@ -307,6 +431,7 @@ public class IncidentService {
         Incident incident =
                 findIncident(incidentId);
 
+
         /*
          * Closed incidents cannot be assigned.
          */
@@ -318,8 +443,9 @@ public class IncidentService {
             );
         }
 
+
         /*
-         * Make sure the user exists.
+         * Verify target user exists.
          */
         userRepository
                 .findById(userId)
@@ -330,18 +456,49 @@ public class IncidentService {
                         )
                 );
 
+
         /*
-         * Incident.assignedTo is UUID
-         * in your current entity.
+         * Capture previous assignment.
+         *
+         * assignedTo is UUID.
+         */
+        UUID previousAssignee =
+                incident.getAssignedTo();
+
+
+        /*
+         * Assign new user.
          */
         incident.setAssignedTo(
                 userId
         );
 
+
+        /*
+         * Save Incident.
+         */
         Incident savedIncident =
                 incidentRepository.save(
                         incident
                 );
+
+
+        /*
+         * =====================================================
+         * PHASE 10
+         * INCIDENT ASSIGNED EVENT
+         * =====================================================
+         */
+        eventPublisher.publishEvent(
+                new IncidentAssignedEvent(
+                        savedIncident.getId(),
+
+                        previousAssignee,
+
+                        userId
+                )
+        );
+
 
         return incidentMapper.toResponse(
                 savedIncident
@@ -361,10 +518,11 @@ public class IncidentService {
     ) {
 
         /*
-         * Find incident.
+         * Find Incident.
          */
         Incident incident =
                 findIncident(incidentId);
+
 
         /*
          * Closed incidents cannot receive notes.
@@ -377,20 +535,9 @@ public class IncidentService {
             );
         }
 
+
         /*
-         * IMPORTANT:
-         *
          * JWT subject = username.
-         *
-         * Therefore:
-         *
-         * authentication.getName()
-         *          ↓
-         * username
-         *          ↓
-         * findByUsernameIgnoreCase()
-         *
-         * Do NOT use UUID.fromString(username).
          */
         User user =
                 userRepository
@@ -404,32 +551,52 @@ public class IncidentService {
                                 )
                         );
 
+
         /*
          * Create note.
          */
         IncidentNote incidentNote =
                 new IncidentNote();
 
+
         incidentNote.setIncident(
                 incident
         );
+
 
         incidentNote.setUser(
                 user
         );
 
+
         incidentNote.setNote(
                 noteContent
         );
 
+
         /*
-         * createdAt is automatically populated
-         * by @PrePersist in IncidentNote.
+         * Save note.
          */
         IncidentNote savedNote =
                 incidentNoteRepository.save(
                         incidentNote
                 );
+
+
+        /*
+         * =====================================================
+         * PHASE 10
+         * INCIDENT NOTE ADDED EVENT
+         * =====================================================
+         */
+        eventPublisher.publishEvent(
+                new IncidentNoteAddedEvent(
+                        incidentId,
+
+                        savedNote.getId()
+                )
+        );
+
 
         return incidentNoteMapper.toResponse(
                 savedNote
@@ -447,22 +614,25 @@ public class IncidentService {
     ) {
 
         /*
-         * Make sure incident exists.
+         * Verify incident exists.
          */
         findIncident(incidentId);
+
 
         return incidentNoteRepository
                 .findByIncidentIdOrderByCreatedAtAsc(
                         incidentId
                 )
                 .stream()
-                .map(incidentNoteMapper::toResponse)
+                .map(
+                        incidentNoteMapper::toResponse
+                )
                 .toList();
     }
 
 
     // =========================================================
-    // ADD SECURITY EVENT TO INCIDENT
+    // ADD SECURITY EVENT
     // =========================================================
 
     @Transactional
@@ -477,6 +647,7 @@ public class IncidentService {
         Incident incident =
                 findIncident(incidentId);
 
+
         /*
          * Find security event.
          */
@@ -490,8 +661,9 @@ public class IncidentService {
                                 )
                         );
 
+
         /*
-         * Prevent duplicate event linkage.
+         * Prevent duplicate linkage.
          */
         if (incidentEventRepository
                 .existsByIncident_IdAndEvent_Id(
@@ -504,28 +676,32 @@ public class IncidentService {
             );
         }
 
+
         /*
          * Create relationship.
          */
         IncidentEvent incidentEvent =
                 new IncidentEvent();
 
+
         incidentEvent.setIncident(
                 incident
         );
+
 
         incidentEvent.setEvent(
                 event
         );
 
+
         /*
-         * createdAt is populated by
-         * IncidentEvent @PrePersist.
+         * Save relationship.
          */
         IncidentEvent savedEvent =
                 incidentEventRepository.save(
                         incidentEvent
                 );
+
 
         return incidentEventMapper.toResponse(
                 savedEvent
@@ -543,16 +719,19 @@ public class IncidentService {
     ) {
 
         /*
-         * Make sure incident exists.
+         * Verify incident exists.
          */
         findIncident(incidentId);
+
 
         return incidentEventRepository
                 .findByIncident_Id(
                         incidentId
                 )
                 .stream()
-                .map(incidentEventMapper::toResponse)
+                .map(
+                        incidentEventMapper::toResponse
+                )
                 .toList();
     }
 
@@ -577,7 +756,7 @@ public class IncidentService {
 
 
     // =========================================================
-    // RISK SEVERITY → INCIDENT SEVERITY
+    // RISK SEVERITY -> INCIDENT SEVERITY
     // =========================================================
 
     private IncidentSeverity mapSeverity(
@@ -590,6 +769,7 @@ public class IncidentService {
                     "Risk assessment severity cannot be null"
             );
         }
+
 
         return switch (
                 assessment.getSeverity()
@@ -611,7 +791,7 @@ public class IncidentService {
 
 
     // =========================================================
-    // INCIDENT STATUS TRANSITION VALIDATION
+    // VALIDATE STATUS TRANSITION
     // =========================================================
 
     private void validateTransition(
@@ -626,6 +806,7 @@ public class IncidentService {
             );
         }
 
+
         if (next == null) {
 
             throw new IllegalArgumentException(
@@ -633,8 +814,9 @@ public class IncidentService {
             );
         }
 
+
         /*
-         * Same status is not a transition.
+         * Same status is not a valid transition.
          */
         if (current == next) {
 
@@ -644,42 +826,26 @@ public class IncidentService {
             );
         }
 
+
         boolean valid =
                 switch (current) {
 
-                    /*
-                     * OPEN
-                     *   ↓
-                     * INVESTIGATING
-                     */
                     case OPEN ->
-                            next
-                                    == IncidentStatus.INVESTIGATING;
+                            next ==
+                                    IncidentStatus.INVESTIGATING;
 
-                    /*
-                     * INVESTIGATING
-                     *   ↓
-                     * RESOLVED
-                     */
                     case INVESTIGATING ->
-                            next
-                                    == IncidentStatus.RESOLVED;
+                            next ==
+                                    IncidentStatus.RESOLVED;
 
-                    /*
-                     * RESOLVED
-                     *   ↓
-                     * CLOSED
-                     */
                     case RESOLVED ->
-                            next
-                                    == IncidentStatus.CLOSED;
+                            next ==
+                                    IncidentStatus.CLOSED;
 
-                    /*
-                     * CLOSED is terminal.
-                     */
                     case CLOSED ->
                             false;
                 };
+
 
         if (!valid) {
 
