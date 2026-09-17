@@ -2,21 +2,21 @@ package cyberpulse.common.exception;
 
 import cyberpulse.common.response.ErrorResponse;
 import cyberpulse.event.service.SecurityEventService;
+
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-
 import org.springframework.http.converter.HttpMessageNotReadableException;
+
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authorization.AuthorizationDeniedException;
 
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-
-// Add the correct import for your SecurityEventService
-// import cyberpulse.security.event.service.SecurityEventService;
 
 import java.time.Instant;
 import java.util.List;
@@ -47,6 +47,55 @@ public class GlobalExceptionHandler {
                 .body(response);
     }
 
+
+    // ============================================================
+    // 403 - Spring Security 7 Authorization denied
+    // ============================================================
+
+    @ExceptionHandler(AuthorizationDeniedException.class)
+    public ResponseEntity<ErrorResponse> handleAuthorizationDenied(
+            AuthorizationDeniedException exception,
+            HttpServletRequest request) {
+
+        ErrorResponse response = ErrorResponse.builder()
+                .timestamp(Instant.now())
+                .status(HttpStatus.FORBIDDEN.value())
+                .code("ACCESS_DENIED")
+                .message("You do not have permission to access this resource")
+                .path(request.getRequestURI())
+                .details(List.of())
+                .build();
+
+        return ResponseEntity
+                .status(HttpStatus.FORBIDDEN)
+                .body(response);
+    }
+
+
+    // ============================================================
+    // 403 - Traditional AccessDeniedException
+    // ============================================================
+
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ErrorResponse> handleAccessDenied(
+            AccessDeniedException exception,
+            HttpServletRequest request) {
+
+        ErrorResponse response = ErrorResponse.builder()
+                .timestamp(Instant.now())
+                .status(HttpStatus.FORBIDDEN.value())
+                .code("ACCESS_DENIED")
+                .message("You do not have permission to access this resource")
+                .path(request.getRequestURI())
+                .details(List.of())
+                .build();
+
+        return ResponseEntity
+                .status(HttpStatus.FORBIDDEN)
+                .body(response);
+    }
+
+
     // ============================================================
     // 404 - Application resource not found
     // ============================================================
@@ -69,6 +118,7 @@ public class GlobalExceptionHandler {
                 .status(HttpStatus.NOT_FOUND)
                 .body(response);
     }
+
 
     // ============================================================
     // 404 - JPA entity not found
@@ -93,6 +143,7 @@ public class GlobalExceptionHandler {
                 .body(response);
     }
 
+
     // ============================================================
     // 400 - Business error
     // ============================================================
@@ -115,6 +166,7 @@ public class GlobalExceptionHandler {
                 .badRequest()
                 .body(response);
     }
+
 
     // ============================================================
     // 400 - Illegal argument
@@ -139,9 +191,9 @@ public class GlobalExceptionHandler {
                 .body(response);
     }
 
+
     // ============================================================
     // 400 - Validation error
-    // Returns ALL validation errors
     // ============================================================
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -173,6 +225,7 @@ public class GlobalExceptionHandler {
                 .body(response);
     }
 
+
     // ============================================================
     // 400 - Invalid JSON / malformed request body / invalid enum
     // ============================================================
@@ -198,6 +251,7 @@ public class GlobalExceptionHandler {
                 .body(response);
     }
 
+
     // ============================================================
     // 409 - Operation not allowed
     // ============================================================
@@ -220,6 +274,7 @@ public class GlobalExceptionHandler {
                 .status(HttpStatus.CONFLICT)
                 .body(response);
     }
+
 
     // ============================================================
     // 404 - Security event not found
@@ -245,6 +300,7 @@ public class GlobalExceptionHandler {
                 .status(HttpStatus.NOT_FOUND)
                 .body(response);
     }
+
 
     // ============================================================
     // 500 - Unexpected error

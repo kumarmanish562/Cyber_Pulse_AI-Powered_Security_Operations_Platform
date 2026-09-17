@@ -1,27 +1,24 @@
 package cyberpulse.event;
 
-import cyberpulse.auth.security.JwtAuthenticationFilter;
 import cyberpulse.auth.security.JwtService;
-import cyberpulse.common.exception.RestAccessDeniedHandler;
-import cyberpulse.common.exception.RestAuthenticationEntryPoint;
 import cyberpulse.event.service.SecurityEventService;
+
 import org.junit.jupiter.api.Test;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetailsService;
 
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.anonymous;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
-
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -33,22 +30,11 @@ class SecurityEventControllerTest {
     @MockitoBean
     private SecurityEventService eventService;
 
-    /*
-     * Mock the JWT filter because these tests use
-     * Spring Security Test's .with(user(...))
-     * instead of testing real JWT authentication.
-     */
-    @MockitoBean
-    private JwtAuthenticationFilter jwtAuthenticationFilter;
-
     @MockitoBean
     private JwtService jwtService;
 
     @MockitoBean
-    private RestAuthenticationEntryPoint authenticationEntryPoint;
-
-    @MockitoBean
-    private RestAccessDeniedHandler accessDeniedHandler;
+    private UserDetailsService userDetailsService;
 
 
     @Test
