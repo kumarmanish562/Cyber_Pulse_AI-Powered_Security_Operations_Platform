@@ -44,7 +44,7 @@ class RiskAssessmentControllerTest {
     void shouldAllowRiskRead() throws Exception {
 
         mockMvc.perform(
-                get("/api/risk-assessments")
+                get("/api/v1/risk-assessments")
                         .with(
                                 user("analyst")
                                         .authorities(
@@ -60,7 +60,7 @@ class RiskAssessmentControllerTest {
     void shouldReturn403WithoutRiskRead() throws Exception {
 
         mockMvc.perform(
-                get("/api/risk-assessments")
+                get("/api/v1/risk-assessments")
                         .with(
                                 user("analyst")
                                         .authorities(

@@ -3,15 +3,16 @@ package cyberpulse.config;
 import cyberpulse.auth.security.JwtAuthenticationFilter;
 import cyberpulse.common.exception.RestAccessDeniedHandler;
 import cyberpulse.common.exception.RestAuthenticationEntryPoint;
+
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
-
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
@@ -33,53 +34,138 @@ public class SecurityConfig {
     ) throws Exception {
 
         http
-                // CSRF
-                .csrf(csrf -> csrf.disable())
 
-                // JWT = stateless
+                // =====================================================
+                // CORS
+                // =====================================================
+                .cors(Customizer.withDefaults())
+
+
+                // =====================================================
+                // CSRF
+                // JWT based stateless API
+                // =====================================================
+                .csrf(csrf ->
+                        csrf.disable()
+                )
+
+
+                // =====================================================
+                // SESSION MANAGEMENT
+                // Stateless authentication
+                // =====================================================
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(
                                 SessionCreationPolicy.STATELESS
                         )
                 )
 
-                // 401 / 403 handlers
+
+                // =====================================================
+                // SECURITY HEADERS
+                // =====================================================
+                .headers(headers ->
+                        headers
+
+                                // Prevent MIME type sniffing
+                                .contentTypeOptions(
+                                        Customizer.withDefaults()
+                                )
+
+                                // Prevent clickjacking
+                                .frameOptions(frame ->
+                                        frame.deny()
+                                )
+
+                                // Referrer policy
+                                .referrerPolicy(referrer ->
+                                        referrer.policy(
+                                                org.springframework
+                                                        .security
+                                                        .web
+                                                        .header
+                                                        .writers
+                                                        .ReferrerPolicyHeaderWriter
+                                                        .ReferrerPolicy
+                                                        .NO_REFERRER
+                                        )
+                                )
+                )
+
+
+                // =====================================================
+                // EXCEPTION HANDLING
+                // =====================================================
                 .exceptionHandling(exception ->
                         exception
+
+                                // 401 Unauthorized
                                 .authenticationEntryPoint(
                                         authenticationEntryPoint
                                 )
+
+                                // 403 Forbidden
                                 .accessDeniedHandler(
                                         accessDeniedHandler
                                 )
                 )
 
-                // Authorization
-                .authorizeHttpRequests(auth -> auth
 
-                        // Public
-                        .requestMatchers(
-                                "/api/auth/register",
-                                "/api/auth/login",
-                                "/api/auth/refresh",
-                                "/api/auth/logout",
-                                "/actuator/health"
-                        ).permitAll()
+                // =====================================================
+                // AUTHORIZATION
+                // =====================================================
+                .authorizeHttpRequests(auth ->
+                        auth
 
-                        // Authentication required
-                        .requestMatchers(
-                                "/api/auth/me"
-                        ).authenticated()
+                                // -------------------------------------------------
+                                // PUBLIC AUTHENTICATION ENDPOINTS
+                                // -------------------------------------------------
+                                .requestMatchers(
+                                        "/api/v1/auth/register",
+                                        "/api/v1/auth/login",
+                                        "/api/v1/auth/refresh"
+                                )
+                                .permitAll()
 
-                        // All other API endpoints
-                        .anyRequest().authenticated()
+
+                                // -------------------------------------------------
+                                // ACTUATOR HEALTH
+                                // -------------------------------------------------
+                                .requestMatchers(
+                                        "/actuator/health",
+                                        "/actuator/health/**"
+                                )
+                                .permitAll()
+
+
+                                // -------------------------------------------------
+                                // SWAGGER / OPENAPI
+                                // Development / API documentation
+                                // -------------------------------------------------
+                                .requestMatchers(
+                                        "/swagger-ui/**",
+                                        "/swagger-ui.html",
+                                        "/v3/api-docs/**"
+                                )
+                                .permitAll()
+
+
+                                // -------------------------------------------------
+                                // EVERYTHING ELSE REQUIRES AUTHENTICATION
+                                // -------------------------------------------------
+                                .anyRequest()
+                                .authenticated()
                 )
 
-                // JWT filter
+
+                // =====================================================
+                // JWT FILTER
+                // =====================================================
                 .addFilterBefore(
                         jwtAuthenticationFilter,
                         UsernamePasswordAuthenticationFilter.class
                 );
+
 
         return http.build();
     }
