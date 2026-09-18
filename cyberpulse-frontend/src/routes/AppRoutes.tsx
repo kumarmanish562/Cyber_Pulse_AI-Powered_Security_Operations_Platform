@@ -1,35 +1,39 @@
 import {
   BrowserRouter,
-  Navigate,
   Route,
   Routes,
 } from "react-router-dom";
 
+import { PublicLayout } from "@/layouts/PublicLayout";
 import { AuthLayout } from "@/layouts/AuthLayout";
 import { DashboardLayout } from "@/layouts/DashboardLayout";
-import { PublicLayout } from "@/layouts/PublicLayout";
 
-import { DashboardPage } from "@/pages/dashboard/DashboardPage";
-
-import { ForgotPasswordPage } from "@/pages/auth/ForgotPasswordPage";
-import { LoginPage } from "@/pages/auth/LoginPage";
-import { ResetPasswordPage } from "@/pages/auth/ResetPasswordPage";
-import { SignupPage } from "@/pages/auth/SignupPage";
+import { ProtectedRoute } from "./ProtectedRoute";
 
 import { LandingPage } from "@/pages/landing/LandingPage";
 
-import { ProtectedRoute } from "./ProtectedRoute";
+import { LoginPage } from "@/pages/auth/LoginPage";
+import { SignupPage } from "@/pages/auth/SignupPage";
+import { ForgotPasswordPage } from "@/pages/auth/ForgotPasswordPage";
+import { ResetPasswordPage } from "@/pages/auth/ResetPasswordPage";
+
+import { DashboardPage } from "@/pages/dashboard/DashboardPage";
 
 export function AppRoutes() {
   return (
     <BrowserRouter>
       <Routes>
+
+        {/* ================= PUBLIC ================= */}
+
         <Route element={<PublicLayout />}>
           <Route
             path="/"
             element={<LandingPage />}
           />
         </Route>
+
+        {/* ================= AUTH ================= */}
 
         <Route element={<AuthLayout />}>
           <Route
@@ -53,24 +57,21 @@ export function AppRoutes() {
           />
         </Route>
 
+        {/* ================= PROTECTED ================= */}
+
         <Route element={<ProtectedRoute />}>
+
           <Route element={<DashboardLayout />}>
+
             <Route
               path="/dashboard"
               element={<DashboardPage />}
             />
+
           </Route>
+
         </Route>
 
-        <Route
-          path="*"
-          element={
-            <Navigate
-              to="/"
-              replace
-            />
-          }
-        />
       </Routes>
     </BrowserRouter>
   );
