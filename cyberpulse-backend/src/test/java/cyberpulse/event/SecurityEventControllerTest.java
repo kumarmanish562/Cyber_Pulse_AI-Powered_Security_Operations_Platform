@@ -41,7 +41,7 @@ class SecurityEventControllerTest {
     void unauthenticatedUserShouldReceive401() throws Exception {
 
         mockMvc.perform(
-                        get("/api/events")
+                        get("/api/v1/events")
                                 .with(anonymous())
                 )
                 .andExpect(status().isUnauthorized());
@@ -52,7 +52,7 @@ class SecurityEventControllerTest {
     void viewerWithEventReadShouldReceive200() throws Exception {
 
         mockMvc.perform(
-                        get("/api/events")
+                        get("/api/v1/events")
                                 .with(
                                         user("viewer")
                                                 .authorities(
@@ -69,7 +69,7 @@ class SecurityEventControllerTest {
     void userWithoutEventReadShouldReceive403() throws Exception {
 
         mockMvc.perform(
-                        get("/api/events")
+                        get("/api/v1/events")
                                 .with(
                                         user("viewer")
                                                 .authorities(

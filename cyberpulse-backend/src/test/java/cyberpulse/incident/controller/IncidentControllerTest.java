@@ -83,7 +83,7 @@ class IncidentControllerTest {
 
 
         mockMvc.perform(
-                        get("/api/incidents")
+                        get("/api/v1/incidents")
                 )
                 .andExpect(
                         status().isOk()
@@ -118,7 +118,7 @@ class IncidentControllerTest {
 
         mockMvc.perform(
                         get(
-                                "/api/incidents/{id}",
+                                "/api/v1/incidents/{id}",
                                 id
                         )
                 )
@@ -161,7 +161,7 @@ class IncidentControllerTest {
 
         mockMvc.perform(
                         patch(
-                                "/api/incidents/{id}/status",
+                                "/api/v1/incidents/{id}/status",
                                 id
                         )
                                 .contentType(
