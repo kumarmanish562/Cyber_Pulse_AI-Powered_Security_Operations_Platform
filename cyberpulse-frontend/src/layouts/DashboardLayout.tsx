@@ -160,10 +160,10 @@ export function DashboardLayout() {
                 onClick={onNavigate}
                 className={({ isActive }) =>
                   cn(
-                    "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all",
+                    "flex items-center gap-3 rounded-lg px-3 py-2 text-[13px] font-medium transition-colors",
                     isActive
-                      ? "bg-primary/12 text-primary shadow-[inset_2px_0_0_0_var(--color-primary)]"
-                      : "text-muted-foreground hover:bg-muted/70 hover:text-foreground",
+                      ? "bg-muted text-foreground font-semibold"
+                      : "text-muted-foreground hover:bg-muted/60 hover:text-foreground",
                   )
                 }
               >
@@ -180,12 +180,12 @@ export function DashboardLayout() {
   const initials = (user?.username || "OP").slice(0, 2).toUpperCase();
 
   return (
-    <div className="flex min-h-screen bg-muted/20 text-foreground">
+    <div className="flex min-h-screen bg-background text-foreground antialiased">
       {/* Desktop Sidebar */}
-      <aside className="hidden w-64 shrink-0 border-r border-border/60 bg-background/95 backdrop-blur lg:flex lg:flex-col">
-        <div className="flex h-16 items-center gap-2.5 border-b border-border/60 px-5">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500 to-cyan-400 text-white shadow-sm shadow-blue-500/25">
-            <ShieldCheck className="h-4.5 w-4.5" />
+      <aside className="hidden w-64 shrink-0 border-r border-border/60 bg-sidebar lg:flex lg:flex-col">
+        <div className="flex h-14 items-center gap-2.5 border-b border-border/60 px-5">
+          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-foreground text-background">
+            <ShieldCheck className="h-4 w-4" />
           </div>
           <Link to="/dashboard" className="flex flex-col">
             <span className="text-sm font-semibold tracking-tight">
@@ -212,7 +212,7 @@ export function DashboardLayout() {
 
       {/* Main Content */}
       <div className="flex flex-1 flex-col">
-        <header className="flex h-16 items-center justify-between border-b bg-background px-4 lg:px-8">
+        <header className="flex h-14 items-center justify-between border-b border-border/60 bg-background/90 px-4 backdrop-blur lg:px-8">
           <div className="flex items-center gap-3">
             <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
               <SheetTrigger
@@ -223,9 +223,13 @@ export function DashboardLayout() {
                 <Menu className="h-5 w-5" />
               </SheetTrigger>
               <SheetContent side="left" className="w-64 p-0">
-                <div className="flex h-16 items-center gap-2 border-b px-6">
-                  <ShieldCheck className="h-5 w-5 text-primary" />
-                  <span className="font-semibold">CyberPulse SOC</span>
+                <div className="flex h-14 items-center gap-2.5 border-b border-border/60 px-5">
+                  <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-foreground text-background">
+                    <ShieldCheck className="h-4 w-4" />
+                  </div>
+                  <span className="text-sm font-semibold tracking-tight">
+                    CyberPulse
+                  </span>
                 </div>
                 {navList(() => setMobileOpen(false))}
               </SheetContent>

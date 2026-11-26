@@ -18,26 +18,28 @@ export function StatCard({
   subtitle,
   icon,
   loading,
-  accentClassName = "border-t-primary/60",
+  accentClassName,
 }: StatCardProps) {
   return (
     <Card
       className={cn(
-        "border-t-2 bg-card/80 transition-colors hover:border-border",
+        "rounded-2xl border-border/80 bg-card/60 shadow-none transition-colors hover:border-foreground/25 hover:bg-card",
         accentClassName,
       )}
     >
       <CardHeader className="flex flex-row items-center justify-between pb-2">
-        <CardTitle className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+        <CardTitle className="text-xs font-medium tracking-wider text-muted-foreground uppercase">
           {title}
         </CardTitle>
-        {icon}
+        <div className="flex h-7 w-7 items-center justify-center rounded-lg border border-border/70 bg-background text-muted-foreground">
+          {icon}
+        </div>
       </CardHeader>
       <CardContent>
         {loading ? (
           <Skeleton className="h-8 w-24" />
         ) : (
-          <div className="text-2xl font-bold tracking-tight sm:text-3xl">
+          <div className="text-2xl font-semibold tracking-tight sm:text-3xl">
             {value}
           </div>
         )}

@@ -55,26 +55,31 @@ function StatusErrorShell({
   icon: React.ReactNode;
 }) {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4 text-foreground">
-      <Card className="w-full max-w-md border-border/70 bg-card/90 text-center shadow-xl">
+    <div className="flex min-h-screen items-center justify-center bg-background px-4 text-foreground antialiased">
+      <Card className="w-full max-w-md rounded-2xl border-border/80 bg-card text-center shadow-none">
         <CardHeader className="items-center">
           <div className="mb-2 flex h-12 w-12 items-center justify-center rounded-full border border-border bg-muted/40">
             {icon}
           </div>
-          <span className="font-mono text-xs font-semibold text-muted-foreground">
+          <span className="font-mono text-xs font-medium text-muted-foreground">
             HTTP {code}
           </span>
-          <CardTitle className="text-2xl">{title}</CardTitle>
+          <CardTitle className="text-2xl font-semibold tracking-tight">
+            {title}
+          </CardTitle>
           <CardDescription>{description}</CardDescription>
         </CardHeader>
         <CardContent />
         <CardFooter className="flex justify-center gap-3">
-          <Link to="/dashboard" className={buttonVariants({ size: "sm" })}>
+          <Link
+            to="/dashboard"
+            className={`${buttonVariants({ size: "sm" })} rounded-full px-5`}
+          >
             Go to Dashboard
           </Link>
           <Link
             to="/"
-            className={buttonVariants({ variant: "outline", size: "sm" })}
+            className={`${buttonVariants({ variant: "outline", size: "sm" })} rounded-full px-5`}
           >
             Home
           </Link>

@@ -10,31 +10,30 @@ const HIGHLIGHTS = [
 
 export function AuthLayout() {
   return (
-    <div className="grid min-h-screen bg-background text-foreground lg:grid-cols-12">
-      {/* Left Branding Panel */}
-      <aside className="relative hidden flex-col justify-between overflow-hidden border-r border-border/60 bg-card/50 p-10 lg:col-span-5 lg:flex">
-        <div className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(circle_at_top_left,rgba(56,189,248,0.16),transparent_50%),radial-gradient(circle_at_bottom_right,rgba(139,92,246,0.14),transparent_50%)]" />
-        <div className="pointer-events-none absolute inset-0 -z-10 bg-[linear-gradient(to_right,rgba(148,163,184,0.04)_1px,transparent_1px),linear-gradient(to_bottom,rgba(148,163,184,0.04)_1px,transparent_1px)] bg-[size:40px_40px]" />
-
+    <div className="grid min-h-screen bg-background text-foreground antialiased lg:grid-cols-12">
+      {/* Left Editorial Panel */}
+      <aside className="hidden flex-col justify-between border-r border-border/70 bg-muted/20 p-10 lg:col-span-5 lg:flex">
         <Link to="/" className="flex items-center gap-2.5">
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg border border-primary/40 bg-primary/15 text-primary">
-            <ShieldCheck className="h-5 w-5" />
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-foreground text-background">
+            <ShieldCheck className="h-4.5 w-4.5" />
           </div>
-          <span className="text-lg font-bold tracking-tight">
-            CyberPulse SOC
+          <span className="text-base font-semibold tracking-tight">
+            CyberPulse
           </span>
         </Link>
 
         <div className="space-y-6">
-          <p className="font-mono text-xs font-semibold uppercase tracking-widest text-cyan-400">
+          <p className="text-xs font-medium tracking-wider text-muted-foreground uppercase">
             Enterprise Security Operations
           </p>
-          <h2 className="text-3xl font-bold leading-tight tracking-tight">
+          <h2 className="text-3xl font-semibold leading-[1.12] tracking-[-0.03em] sm:text-4xl">
             Intelligent Security.
-            <br />
-            Faster Response.
-            <br />
-            Stronger Defense.
+            <span className="mt-1 block text-muted-foreground">
+              Faster Response.
+            </span>
+            <span className="mt-1 block text-muted-foreground">
+              Stronger Defense.
+            </span>
           </h2>
           <p className="max-w-md text-sm leading-relaxed text-muted-foreground">
             Unified telemetry, automated risk scoring, and AI-powered incident
@@ -44,7 +43,7 @@ export function AuthLayout() {
           <ul className="space-y-3 pt-2 text-sm text-muted-foreground">
             {HIGHLIGHTS.map((item) => (
               <li key={item} className="flex items-center gap-2.5">
-                <CheckCircle2 className="h-4 w-4 shrink-0 text-cyan-400" />
+                <CheckCircle2 className="h-4 w-4 shrink-0 text-foreground/75" />
                 <span>{item}</span>
               </li>
             ))}
@@ -64,10 +63,12 @@ export function AuthLayout() {
 
         <Link
           to="/"
-          className="mb-8 flex items-center gap-2 text-lg font-bold tracking-tight lg:hidden"
+          className="mb-8 flex items-center gap-2 text-base font-semibold tracking-tight lg:hidden"
         >
-          <ShieldCheck className="h-6 w-6 text-primary" />
-          <span>CyberPulse SOC</span>
+          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-foreground text-background">
+            <ShieldCheck className="h-4 w-4" />
+          </div>
+          <span>CyberPulse</span>
         </Link>
 
         <div className="w-full max-w-md">

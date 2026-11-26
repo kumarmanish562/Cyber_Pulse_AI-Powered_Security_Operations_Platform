@@ -342,10 +342,10 @@ export function DashboardPage() {
         </Card>
       </div>
       {/* AI Security Insights Quick Card */}
-      <Card className="border-primary/25 bg-gradient-to-r from-primary/5 via-background to-cyan-500/5">
+      <Card className="rounded-2xl border-border/80 bg-card/60 shadow-none">
         <CardContent className="flex flex-col justify-between gap-4 py-5 sm:flex-row sm:items-center">
           <div className="flex items-start gap-3">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/15 text-primary">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-border bg-background text-foreground">
               <Brain className="h-5 w-5" />
             </div>
             <div>
@@ -358,7 +358,12 @@ export function DashboardPage() {
               </p>
             </div>
           </div>
-          <Button variant="outline" size="sm" render={<Link to="/incidents" />}>
+          <Button
+            variant="outline"
+            size="sm"
+            className="rounded-full px-4"
+            render={<Link to="/incidents" />}
+          >
             Open Incidents
             <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
           </Button>
