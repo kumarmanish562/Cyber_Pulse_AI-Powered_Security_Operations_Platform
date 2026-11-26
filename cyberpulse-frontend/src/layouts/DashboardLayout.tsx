@@ -30,6 +30,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useAuth } from "@/context/AuthContext";
+import { useSocStream } from "@/hooks/useSocStream";
 import { api } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import type { NotificationItem, PageResponse } from "@/types/api";
@@ -48,10 +49,12 @@ const NAV_ITEMS = [
 ];
 
 export function DashboardLayout() {
-  const { user, logout } = useAuth();
+  const { user, isAuthenticated, logout } = useAuth();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [mobileOpen, setMobileOpen] = useState(false);
+
+  useSocStream(isAuthenticated);
 
   const { data: unreadCountData } = useQuery({
     queryKey: ["notifications", "unread-count"],

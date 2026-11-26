@@ -3,6 +3,8 @@ package cyberpulse.event.controller;
 import cyberpulse.common.enums.EventType;
 import cyberpulse.common.enums.Severity;
 import cyberpulse.common.validation.IpAddress;
+import cyberpulse.event.dto.BatchSecurityEventRequest;
+import cyberpulse.event.dto.BatchSecurityEventResponse;
 import cyberpulse.event.dto.CreateSecurityEventRequest;
 import cyberpulse.event.dto.SecurityEventFilter;
 import cyberpulse.event.dto.SecurityEventResponse;
@@ -48,6 +50,17 @@ public class SecurityEventController {
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(response);
+    }
+
+    @PostMapping("/batch")
+    @PreAuthorize("hasAuthority('EVENT_WRITE')")
+    public ResponseEntity<BatchSecurityEventResponse> createBatch(
+            @Valid @RequestBody BatchSecurityEventRequest request
+    ) {
+        var events = eventService.createBatch(request.events());
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(new BatchSecurityEventResponse(events.size(), events));
     }
 
     @GetMapping

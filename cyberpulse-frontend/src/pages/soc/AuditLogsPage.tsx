@@ -1,6 +1,9 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { Download } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { downloadExportFile } from "@/utils/download";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Table,
@@ -29,12 +32,43 @@ export function AuditLogsPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight">Audit Logs</h1>
-        <p className="text-sm text-muted-foreground">
-          Immutable trail of security and incident operations across the
-          platform.
-        </p>
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">Audit Logs</h1>
+          <p className="text-sm text-muted-foreground">
+            Immutable trail of security and incident operations across the
+            platform.
+          </p>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() =>
+              downloadExportFile(
+                "/api/v1/audit-logs/export?format=csv",
+                "audit-logs-export.csv",
+              ).catch(() => toast.error("Export failed"))
+            }
+          >
+            <Download className="mr-1 h-4 w-4" />
+            CSV
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() =>
+              downloadExportFile(
+                "/api/v1/audit-logs/export?format=json",
+                "audit-logs-export.json",
+              ).catch(() => toast.error("Export failed"))
+            }
+          >
+            <Download className="mr-1 h-4 w-4" />
+            JSON
+          </Button>
+        </div>
       </div>
 
       <Card>

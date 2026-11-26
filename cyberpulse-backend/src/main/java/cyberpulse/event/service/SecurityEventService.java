@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -56,6 +57,27 @@ public class SecurityEventService {
         eventPublisher.publishEvent(new SecurityEventCreatedEvent(savedEvent.getId()));
 
         return eventMapper.toResponse(savedEvent);
+    }
+
+    @Transactional
+    public List<SecurityEventResponse> createBatch(
+            List<CreateSecurityEventRequest> requests
+    ) {
+        List<SecurityEvent> entities = requests.stream()
+                .map(req -> {
+                    validateTimeRange(req.eventTime());
+                    return eventMapper.toEntity(req);
+                })
+                .toList();
+
+        List<SecurityEvent> savedEvents = eventRepository.saveAll(entities);
+        savedEvents.forEach(ev ->
+                eventPublisher.publishEvent(new SecurityEventCreatedEvent(ev.getId()))
+        );
+
+        return savedEvents.stream()
+                .map(eventMapper::toResponse)
+                .toList();
     }
 
     @Transactional(readOnly = true)

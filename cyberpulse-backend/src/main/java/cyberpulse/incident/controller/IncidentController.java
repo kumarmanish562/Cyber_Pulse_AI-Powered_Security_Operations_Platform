@@ -1,14 +1,19 @@
 package cyberpulse.incident.controller;
 
 import cyberpulse.common.response.PageResponse;
+import cyberpulse.common.web.CsvExportUtil;
 import cyberpulse.incident.dto.*;
 import cyberpulse.incident.entity.IncidentSeverity;
 import cyberpulse.incident.entity.IncidentStatus;
 import cyberpulse.incident.service.IncidentService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -52,6 +57,44 @@ public class IncidentController {
         return PageResponse.from(
                 incidentService.getAll(pageable)
         );
+    }
+
+    @GetMapping("/export")
+    @PreAuthorize("hasAuthority('INCIDENT_READ')")
+    public ResponseEntity<?> exportIncidents(
+            @RequestParam(defaultValue = "csv") String format
+    ) {
+        List<IncidentResponse> rows = incidentService
+                .getAll(PageRequest.of(0, 1000))
+                .getContent();
+
+        if ("json".equalsIgnoreCase(format)) {
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"incidents-export.json\"")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(rows);
+        }
+
+        String csv = CsvExportUtil.toCsv(
+                List.of("id", "incidentNumber", "title", "status", "severity", "assignedTo", "createdAt", "resolvedAt", "closedAt"),
+                rows,
+                r -> List.of(
+                        r.id(),
+                        r.incidentNumber(),
+                        r.title(),
+                        r.status(),
+                        r.severity(),
+                        r.assignedTo() != null ? r.assignedTo() : "",
+                        r.createdAt(),
+                        r.resolvedAt() != null ? r.resolvedAt() : "",
+                        r.closedAt() != null ? r.closedAt() : ""
+                )
+        );
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"incidents-export.csv\"")
+                .contentType(MediaType.parseMediaType("text/csv"))
+                .body(csv);
     }
 
 

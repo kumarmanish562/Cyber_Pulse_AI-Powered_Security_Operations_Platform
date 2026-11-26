@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Plus, Sparkles } from "lucide-react";
+import { Download, Plus, Sparkles } from "lucide-react";
 import { toast } from "sonner";
+import { downloadExportFile } from "@/utils/download";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -139,7 +140,33 @@ export function IncidentsPage() {
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() =>
+              downloadExportFile(
+                "/api/v1/incidents/export?format=csv",
+                "incidents-export.csv",
+              ).catch(() => toast.error("Export failed"))
+            }
+          >
+            <Download className="mr-1 h-4 w-4" />
+            CSV
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() =>
+              downloadExportFile(
+                "/api/v1/incidents/export?format=json",
+                "incidents-export.json",
+              ).catch(() => toast.error("Export failed"))
+            }
+          >
+            <Download className="mr-1 h-4 w-4" />
+            JSON
+          </Button>
           <select
             className="h-9 rounded-md border bg-background px-3 text-sm"
             value={statusFilter}
