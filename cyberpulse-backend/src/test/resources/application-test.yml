@@ -14,3 +14,10 @@ jwt:
 cyberpulse:
   rate-limit:
     enabled: false
+
+management:
+  health:
+    mail:
+      enabled: false
+    redis:
+      enabled: false

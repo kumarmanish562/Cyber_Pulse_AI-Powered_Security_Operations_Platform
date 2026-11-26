@@ -5,6 +5,7 @@ import cyberpulse.apikey.dto.CreateApiKeyRequest;
 import cyberpulse.apikey.dto.CreateApiKeyResponse;
 import cyberpulse.apikey.service.ServiceApiKeyService;
 import cyberpulse.common.security.CurrentUserService;
+import cyberpulse.user.entity.User;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -26,7 +27,9 @@ public class ServiceApiKeyController {
     @PostMapping
     @PreAuthorize("hasAuthority('USER_READ')")
     public ResponseEntity<CreateApiKeyResponse> create(@Valid @RequestBody CreateApiKeyRequest request) {
-        UUID currentUserId = currentUserService.getCurrentUserId();
+        UUID currentUserId = currentUserService.getCurrentUser()
+                .map(User::getId)
+                .orElse(null);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(apiKeyService.createKey(request, currentUserId));
     }

@@ -20,7 +20,6 @@ public class RealtimeSocEventListener {
     public void onThreatDetected(ThreatDetectedEvent event) {
         sseEventPublisher.publish("detection", Map.of(
                 "threatDetectionId", event.threatDetectionId(),
-                "threatType", event.threatType(),
                 "timestamp", Instant.now().toString()
         ));
     }

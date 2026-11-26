@@ -142,11 +142,12 @@ public class SecurityConfig {
 
 
                                 // -------------------------------------------------
-                                // ACTUATOR HEALTH
+                                // ACTUATOR & API HEALTH
                                 // -------------------------------------------------
                                 .requestMatchers(
                                         "/actuator/health",
-                                        "/actuator/health/**"
+                                        "/actuator/health/**",
+                                        "/api/v1/health"
                                 )
                                 .permitAll()
 

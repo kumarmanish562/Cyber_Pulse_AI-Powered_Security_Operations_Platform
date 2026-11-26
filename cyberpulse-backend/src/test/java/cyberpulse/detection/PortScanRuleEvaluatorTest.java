@@ -1,7 +1,9 @@
-package cyberpulse.detection.engine;
+package cyberpulse.detection;
 
 import cyberpulse.common.enums.DetectionRuleType;
 import cyberpulse.common.enums.EventType;
+import cyberpulse.detection.engine.DetectionRuleEvaluator;
+import cyberpulse.detection.engine.PortScanRuleEvaluator;
 import cyberpulse.detection.entity.DetectionRule;
 import cyberpulse.event.entity.SecurityEvent;
 import cyberpulse.event.repository.SecurityEventRepository;

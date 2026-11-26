@@ -12,7 +12,10 @@ class CsvExportUtilTest {
     void shouldEscapeQuotesCommasAndFormulaPrefixes() {
         String csv = CsvExportUtil.toCsv(
                 List.of("id", "note"),
-                List.of(List.of("1", "hello, \"world\""), List.of("2", "=SUM(A1:A2)")),
+                List.of(
+                        List.<Object>of("1", "hello, \"world\""),
+                        List.<Object>of("2", "=SUM(A1:A2)")
+                ),
                 row -> row
         );
 
