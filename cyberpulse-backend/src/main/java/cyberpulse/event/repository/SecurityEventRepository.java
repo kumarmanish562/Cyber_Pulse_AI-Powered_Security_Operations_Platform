@@ -12,6 +12,7 @@ import org.springframework.data.repository.query.Param;
 
 import java.net.InetAddress;
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 
 
@@ -87,4 +88,13 @@ public interface SecurityEventRepository
     );
 
     long deleteByEventTimeBefore(Instant cutoff);
+
+    List<SecurityEvent> findTop5ByUsernameContainingIgnoreCaseOrServiceContainingIgnoreCaseOrderByEventTimeDesc(
+            String username,
+            String service
+    );
+
+    long countBySourceIp(InetAddress sourceIp);
+
+    long countBySourceIpAndEventType(InetAddress sourceIp, EventType eventType);
 }

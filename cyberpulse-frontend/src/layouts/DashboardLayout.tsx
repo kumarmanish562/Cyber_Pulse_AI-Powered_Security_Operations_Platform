@@ -12,6 +12,8 @@ import {
   Lock,
   LogOut,
   Menu,
+  Radar,
+  Search,
   ShieldAlert,
   ShieldCheck,
   SlidersHorizontal,
@@ -29,12 +31,17 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useAuth } from "@/context/AuthContext";
 import { useSocStream } from "@/hooks/useSocStream";
 import { api } from "@/lib/api";
 import { cn } from "@/lib/utils";
-import type { NotificationItem, PageResponse } from "@/types/api";
+import type {
+  GlobalSearchResponse,
+  NotificationItem,
+  PageResponse,
+} from "@/types/api";
 
 const NAV_ITEMS = [
   { to: "/dashboard", label: "Overview", icon: LayoutDashboard },
@@ -44,6 +51,7 @@ const NAV_ITEMS = [
   { to: "/risk-assessments", label: "Risk Assessments", icon: Gauge },
   { to: "/incidents", label: "Incidents", icon: AlertTriangle },
   { to: "/blocklist", label: "IP Blocklist", icon: Ban },
+  { to: "/threat-intel", label: "Threat Intel", icon: Radar },
   { to: "/audit-logs", label: "Audit Logs", icon: FileSearch },
   { to: "/users", label: "Users & RBAC", icon: Users },
   { to: "/api-keys", label: "Service API Keys", icon: KeyRound },
@@ -55,8 +63,20 @@ export function DashboardLayout() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
 
   useSocStream(isAuthenticated);
+
+  const { data: searchResults } = useQuery({
+    queryKey: ["global-search", searchQuery],
+    enabled: searchQuery.trim().length >= 2,
+    queryFn: async () =>
+      (
+        await api.get<GlobalSearchResponse>(
+          `/api/v1/search?q=${encodeURIComponent(searchQuery.trim())}`,
+        )
+      ).data,
+  });
 
   const { data: unreadCountData } = useQuery({
     queryKey: ["notifications", "unread-count"],
@@ -173,9 +193,79 @@ export function DashboardLayout() {
                 {navList(() => setMobileOpen(false))}
               </SheetContent>
             </Sheet>
-            <span className="text-sm font-medium text-muted-foreground">
+            <span className="hidden text-sm font-medium text-muted-foreground md:inline">
               Security Operations Center
             </span>
+          </div>
+
+          <div className="relative mx-4 hidden w-full max-w-sm sm:block">
+            <Search className="pointer-events-none absolute top-2.5 left-2.5 h-4 w-4 text-muted-foreground" />
+            <Input
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search incidents, users, IPs..."
+              className="h-9 pl-8 text-sm"
+            />
+            {searchQuery.trim().length >= 2 && searchResults && (
+              <div className="absolute top-10 right-0 left-0 z-50 max-h-80 overflow-y-auto rounded-md border bg-background p-2 shadow-lg">
+                {searchResults.incidents.length === 0 &&
+                searchResults.events.length === 0 &&
+                searchResults.blockedIps.length === 0 ? (
+                  <p className="p-2 text-center text-xs text-muted-foreground">
+                    No matching SOC records
+                  </p>
+                ) : (
+                  <div className="space-y-2 text-xs">
+                    {searchResults.incidents.map((i) => (
+                      <button
+                        key={i.id}
+                        type="button"
+                        onClick={() => {
+                          setSearchQuery("");
+                          navigate("/incidents");
+                        }}
+                        className="flex w-full items-center justify-between rounded px-2 py-1.5 text-left hover:bg-muted"
+                      >
+                        <span className="truncate font-medium">
+                          {i.incidentNumber}: {i.title}
+                        </span>
+                        <Badge variant="outline">{i.severity}</Badge>
+                      </button>
+                    ))}
+                    {searchResults.events.map((ev) => (
+                      <button
+                        key={ev.id}
+                        type="button"
+                        onClick={() => {
+                          setSearchQuery("");
+                          navigate("/events");
+                        }}
+                        className="flex w-full items-center justify-between rounded px-2 py-1.5 text-left hover:bg-muted"
+                      >
+                        <span className="truncate">
+                          {ev.eventType} ({ev.username || ev.service || "event"})
+                        </span>
+                        <Badge variant="secondary">{ev.severity}</Badge>
+                      </button>
+                    ))}
+                    {searchResults.blockedIps.map((b) => (
+                      <button
+                        key={b.id}
+                        type="button"
+                        onClick={() => {
+                          setSearchQuery("");
+                          navigate("/blocklist");
+                        }}
+                        className="flex w-full items-center justify-between rounded px-2 py-1.5 text-left hover:bg-muted"
+                      >
+                        <span className="font-mono">{b.ipAddress}</span>
+                        <Badge variant="destructive">BLOCKED</Badge>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           <div className="flex items-center gap-3">

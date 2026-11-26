@@ -12,4 +12,9 @@ public interface BlockedIpRepository extends JpaRepository<BlockedIp, UUID> {
     Optional<BlockedIp> findByIpAddress(String ipAddress);
 
     List<BlockedIp> findByActiveTrueOrderByCreatedAtDesc();
+
+    List<BlockedIp> findTop5ByIpAddressContainingIgnoreCaseOrReasonContainingIgnoreCaseOrderByCreatedAtDesc(
+            String ipAddress,
+            String reason
+    );
 }

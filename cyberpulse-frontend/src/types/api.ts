@@ -66,6 +66,26 @@ export interface BlockedIp {
   createdAt: string;
 }
 
+export interface GlobalSearchResponse {
+  query: string;
+  incidents: Incident[];
+  events: SecurityEvent[];
+  blockedIps: BlockedIp[];
+}
+
+export interface IpThreatIntelResponse {
+  ipAddress: string;
+  totalEvents: number;
+  failedLogins: number;
+  portScans: number;
+  currentlyBlocked: boolean;
+  blockReason: string | null;
+  externalAbuseConfidenceScore: number | null;
+  externalProvider: string;
+  riskVerdict: "CLEAN" | "SUSPICIOUS" | "MALICIOUS";
+  checkedAt: string;
+}
+
 export interface ApiErrorResponse {
   timestamp: string;
   status: number;

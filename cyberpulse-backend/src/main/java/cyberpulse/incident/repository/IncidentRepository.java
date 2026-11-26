@@ -7,11 +7,17 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 public interface IncidentRepository
         extends JpaRepository<Incident, UUID> {
+
+    List<Incident> findTop5ByTitleContainingIgnoreCaseOrIncidentNumberContainingIgnoreCaseOrderByCreatedAtDesc(
+            String title,
+            String incidentNumber
+    );
 
     Optional<Incident> findByIncidentNumber(
             String incidentNumber
