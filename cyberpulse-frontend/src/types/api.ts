@@ -86,6 +86,29 @@ export interface IpThreatIntelResponse {
   checkedAt: string;
 }
 
+export interface SocPostureResponse {
+  openIncidents: number;
+  slaBreachedCount: number;
+  slaAtRiskCount: number;
+  slaAlerts: Array<{
+    incidentId: string;
+    incidentNumber: string;
+    title: string;
+    severity: Severity;
+    status: IncidentStatus;
+    elapsedMinutes: number;
+    slaTargetMinutes: number;
+    breached: boolean;
+  }>;
+  mitreTechniques: Array<{
+    tacticId: string;
+    tacticName: string;
+    techniqueId: string;
+    techniqueName: string;
+    detectionCount: number;
+  }>;
+}
+
 export interface ApiErrorResponse {
   timestamp: string;
   status: number;

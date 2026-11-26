@@ -2,9 +2,11 @@ import { useQuery } from "@tanstack/react-query";
 import {
   Activity,
   AlertTriangle,
+  Clock,
   Gauge,
   ShieldAlert,
 } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import {
   Bar,
   BarChart,
@@ -40,6 +42,7 @@ import type {
   PageResponse,
   RiskAssessment,
   SecurityEvent,
+  SocPostureResponse,
   SpringPage,
   ThreatDetection,
 } from "@/types/api";
@@ -76,6 +79,12 @@ export function DashboardPage() {
     queryFn: async () =>
       (await api.get<PageResponse<Incident>>("/api/v1/incidents?size=5"))
         .data,
+  });
+
+  const { data: posture } = useQuery({
+    queryKey: ["dashboard", "soc-posture"],
+    queryFn: async () =>
+      (await api.get<SocPostureResponse>("/api/v1/soc/posture")).data,
   });
 
   const severityCounts = ["LOW", "MEDIUM", "HIGH", "CRITICAL"].map((sev) => ({
@@ -200,6 +209,91 @@ export function DashboardPage() {
                 )}
               </TableBody>
             </Table>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* SLA & MITRE ATT&CK Posture */}
+      <div className="grid gap-6 lg:grid-cols-2">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Clock className="h-4 w-4 text-primary" />
+              <span>Incident SLA Monitor</span>
+              {posture && posture.slaBreachedCount > 0 && (
+                <Badge variant="destructive" className="ml-auto">
+                  {posture.slaBreachedCount} Breached
+                </Badge>
+              )}
+            </CardTitle>
+            <CardDescription>
+              Open &amp; investigating incidents tracked against response SLAs
+              (Critical 15m / High 60m)
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            {posture?.slaAlerts.length ? (
+              posture.slaAlerts.slice(0, 5).map((sla) => (
+                <div
+                  key={sla.incidentId}
+                  className="flex items-center justify-between rounded border px-3 py-2 text-xs"
+                >
+                  <div className="min-w-0">
+                    <div className="truncate font-medium">
+                      <span className="font-mono text-muted-foreground">
+                        {sla.incidentNumber}
+                      </span>{" "}
+                      {sla.title}
+                    </div>
+                    <div className="text-muted-foreground">
+                      Elapsed {sla.elapsedMinutes}m / Target{" "}
+                      {sla.slaTargetMinutes}m
+                    </div>
+                  </div>
+                  <Badge variant={sla.breached ? "destructive" : "secondary"}>
+                    {sla.breached ? "SLA BREACHED" : sla.severity}
+                  </Badge>
+                </div>
+              ))
+            ) : (
+              <p className="text-xs text-muted-foreground">
+                No active open incidents breaching SLA targets.
+              </p>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>MITRE ATT&amp;CK Coverage</CardTitle>
+            <CardDescription>
+              Observed adversary tactics and techniques from threat detections
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            {posture?.mitreTechniques.length ? (
+              posture.mitreTechniques.map((m) => (
+                <div
+                  key={m.techniqueId}
+                  className="flex items-center justify-between rounded border px-3 py-2 text-xs"
+                >
+                  <div>
+                    <span className="font-mono font-semibold text-primary">
+                      {m.techniqueId}
+                    </span>{" "}
+                    <span className="font-medium">{m.techniqueName}</span>
+                    <div className="text-muted-foreground">
+                      {m.tacticId} — {m.tacticName}
+                    </div>
+                  </div>
+                  <Badge variant="outline">{m.detectionCount} hits</Badge>
+                </div>
+              ))
+            ) : (
+              <p className="text-xs text-muted-foreground">
+                No MITRE ATT&amp;CK detections recorded yet.
+              </p>
+            )}
           </CardContent>
         </Card>
       </div>
