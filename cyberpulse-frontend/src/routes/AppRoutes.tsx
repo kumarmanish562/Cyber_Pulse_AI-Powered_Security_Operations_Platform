@@ -73,6 +73,11 @@ const ThreatIntelPage = lazy(() =>
     default: m.ThreatIntelPage,
   })),
 );
+const AttackSimulatorPage = lazy(() =>
+  import("@/pages/soc/AttackSimulatorPage").then((m) => ({
+    default: m.AttackSimulatorPage,
+  })),
+);
 
 function RouteFallback() {
   return (
@@ -110,6 +115,7 @@ export function AppRoutes() {
               <Route path="/incidents" element={<IncidentsPage />} />
               <Route path="/blocklist" element={<BlocklistPage />} />
               <Route path="/threat-intel" element={<ThreatIntelPage />} />
+              <Route path="/simulator" element={<AttackSimulatorPage />} />
               <Route path="/audit-logs" element={<AuditLogsPage />} />
               <Route path="/users" element={<UsersPage />} />
               <Route path="/api-keys" element={<ApiKeysPage />} />

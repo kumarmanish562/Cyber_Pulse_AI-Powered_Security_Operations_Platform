@@ -109,6 +109,19 @@ export interface SocPostureResponse {
   }>;
 }
 
+export type AttackScenario =
+  | "SSH_BRUTE_FORCE"
+  | "PORT_SCAN_SWEEP"
+  | "IMPOSSIBLE_TRAVEL";
+
+export interface SimulationResponse {
+  scenario: AttackScenario;
+  eventsInjected: number;
+  attackerIp: string;
+  summary: string;
+  triggeredAt: string;
+}
+
 export interface ApiErrorResponse {
   timestamp: string;
   status: number;
