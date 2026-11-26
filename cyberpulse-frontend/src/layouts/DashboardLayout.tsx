@@ -6,6 +6,7 @@ import {
   Ban,
   Bell,
   FileSearch,
+  FileText,
   Flame,
   Gauge,
   KeyRound,
@@ -34,6 +35,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { CommandPalette } from "@/components/soc/CommandPalette";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { useAuth } from "@/context/AuthContext";
 import { useSocStream } from "@/hooks/useSocStream";
@@ -55,6 +57,7 @@ const NAV_ITEMS = [
   { to: "/blocklist", label: "IP Blocklist", icon: Ban },
   { to: "/threat-intel", label: "Threat Intel", icon: Radar },
   { to: "/simulator", label: "Attack Simulator", icon: Flame },
+  { to: "/reports", label: "Shift Reports", icon: FileText },
   { to: "/audit-logs", label: "Audit Logs", icon: FileSearch },
   { to: "/users", label: "Users & RBAC", icon: Users },
   { to: "/api-keys", label: "Service API Keys", icon: KeyRound },
@@ -272,6 +275,7 @@ export function DashboardLayout() {
           </div>
 
           <div className="flex items-center gap-3">
+            <CommandPalette />
             <Badge
               variant="outline"
               className="hidden items-center gap-1.5 border-emerald-500/40 bg-emerald-500/10 text-emerald-500 sm:inline-flex"

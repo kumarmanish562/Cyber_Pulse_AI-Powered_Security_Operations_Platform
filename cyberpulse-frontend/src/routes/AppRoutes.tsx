@@ -78,6 +78,11 @@ const AttackSimulatorPage = lazy(() =>
     default: m.AttackSimulatorPage,
   })),
 );
+const ShiftReportPage = lazy(() =>
+  import("@/pages/soc/ShiftReportPage").then((m) => ({
+    default: m.ShiftReportPage,
+  })),
+);
 
 function RouteFallback() {
   return (
@@ -116,6 +121,7 @@ export function AppRoutes() {
               <Route path="/blocklist" element={<BlocklistPage />} />
               <Route path="/threat-intel" element={<ThreatIntelPage />} />
               <Route path="/simulator" element={<AttackSimulatorPage />} />
+              <Route path="/reports" element={<ShiftReportPage />} />
               <Route path="/audit-logs" element={<AuditLogsPage />} />
               <Route path="/users" element={<UsersPage />} />
               <Route path="/api-keys" element={<ApiKeysPage />} />

@@ -122,6 +122,19 @@ export interface SimulationResponse {
   triggeredAt: string;
 }
 
+export interface ShiftHandoverReport {
+  generatedAt: string;
+  windowHours: number;
+  totalEvents24h: number;
+  totalDetections24h: number;
+  openIncidents: number;
+  slaBreachedCount: number;
+  slaCompliancePercent: number;
+  activeBlockedIps: number;
+  topMitreTechniques: string[];
+  markdownSummary: string;
+}
+
 export interface ApiErrorResponse {
   timestamp: string;
   status: number;
