@@ -1,3 +1,4 @@
+import { Suspense, lazy } from "react";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
@@ -9,44 +10,87 @@ import { ForgotPasswordPage } from "@/pages/auth/ForgotPasswordPage";
 import { LoginPage } from "@/pages/auth/LoginPage";
 import { ResetPasswordPage } from "@/pages/auth/ResetPasswordPage";
 import { SignupPage } from "@/pages/auth/SignupPage";
-import { DashboardPage } from "@/pages/dashboard/DashboardPage";
 import { LandingPage } from "@/pages/landing/LandingPage";
-import { AuditLogsPage } from "@/pages/soc/AuditLogsPage";
-import { DetectionRulesPage } from "@/pages/soc/DetectionRulesPage";
-import { IncidentsPage } from "@/pages/soc/IncidentsPage";
-import { RiskAssessmentsPage } from "@/pages/soc/RiskAssessmentsPage";
-import { SecurityEventsPage } from "@/pages/soc/SecurityEventsPage";
-import { ThreatDetectionsPage } from "@/pages/soc/ThreatDetectionsPage";
-import { UsersPage } from "@/pages/soc/UsersPage";
+
+const DashboardPage = lazy(() =>
+  import("@/pages/dashboard/DashboardPage").then((m) => ({
+    default: m.DashboardPage,
+  })),
+);
+const SecurityEventsPage = lazy(() =>
+  import("@/pages/soc/SecurityEventsPage").then((m) => ({
+    default: m.SecurityEventsPage,
+  })),
+);
+const ThreatDetectionsPage = lazy(() =>
+  import("@/pages/soc/ThreatDetectionsPage").then((m) => ({
+    default: m.ThreatDetectionsPage,
+  })),
+);
+const DetectionRulesPage = lazy(() =>
+  import("@/pages/soc/DetectionRulesPage").then((m) => ({
+    default: m.DetectionRulesPage,
+  })),
+);
+const RiskAssessmentsPage = lazy(() =>
+  import("@/pages/soc/RiskAssessmentsPage").then((m) => ({
+    default: m.RiskAssessmentsPage,
+  })),
+);
+const IncidentsPage = lazy(() =>
+  import("@/pages/soc/IncidentsPage").then((m) => ({
+    default: m.IncidentsPage,
+  })),
+);
+const AuditLogsPage = lazy(() =>
+  import("@/pages/soc/AuditLogsPage").then((m) => ({
+    default: m.AuditLogsPage,
+  })),
+);
+const UsersPage = lazy(() =>
+  import("@/pages/soc/UsersPage").then((m) => ({
+    default: m.UsersPage,
+  })),
+);
+
+function RouteFallback() {
+  return (
+    <div className="flex min-h-[40vh] items-center justify-center text-sm text-muted-foreground">
+      Loading view...
+    </div>
+  );
+}
 
 export function AppRoutes() {
   return (
     <BrowserRouter>
-      <Routes>
-        <Route element={<PublicLayout />}>
-          <Route path="/" element={<LandingPage />} />
-        </Route>
-
-        <Route element={<AuthLayout />}>
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/signup" element={<SignupPage />} />
-          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-          <Route path="/reset-password" element={<ResetPasswordPage />} />
-        </Route>
-
-        <Route element={<ProtectedRoute />}>
-          <Route element={<DashboardLayout />}>
-            <Route path="/dashboard" element={<DashboardPage />} />
-            <Route path="/events" element={<SecurityEventsPage />} />
-            <Route path="/detections" element={<ThreatDetectionsPage />} />
-            <Route path="/rules" element={<DetectionRulesPage />} />
-            <Route path="/risk-assessments" element={<RiskAssessmentsPage />} />
-            <Route path="/incidents" element={<IncidentsPage />} />
-            <Route path="/audit-logs" element={<AuditLogsPage />} />
-            <Route path="/users" element={<UsersPage />} />
+      <Suspense fallback={<RouteFallback />}>
+        <Routes>
+          <Route element={<PublicLayout />}>
+            <Route path="/" element={<LandingPage />} />
           </Route>
-        </Route>
-      </Routes>
+
+          <Route element={<AuthLayout />}>
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/signup" element={<SignupPage />} />
+            <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+            <Route path="/reset-password" element={<ResetPasswordPage />} />
+          </Route>
+
+          <Route element={<ProtectedRoute />}>
+            <Route element={<DashboardLayout />}>
+              <Route path="/dashboard" element={<DashboardPage />} />
+              <Route path="/events" element={<SecurityEventsPage />} />
+              <Route path="/detections" element={<ThreatDetectionsPage />} />
+              <Route path="/rules" element={<DetectionRulesPage />} />
+              <Route path="/risk-assessments" element={<RiskAssessmentsPage />} />
+              <Route path="/incidents" element={<IncidentsPage />} />
+              <Route path="/audit-logs" element={<AuditLogsPage />} />
+              <Route path="/users" element={<UsersPage />} />
+            </Route>
+          </Route>
+        </Routes>
+      </Suspense>
     </BrowserRouter>
   );
 }
