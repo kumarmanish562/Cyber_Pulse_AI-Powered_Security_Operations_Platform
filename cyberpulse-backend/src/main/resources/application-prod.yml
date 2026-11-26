@@ -10,6 +10,10 @@ spring:
     properties:
       hibernate:
         format_sql: false
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
 
 server:
   forward-headers-strategy: framework
@@ -47,3 +51,7 @@ cyberpulse:
     from: ${MAIL_FROM:noreply@cyberpulse.io}
   alerting:
     webhook-url: ${ALERT_WEBHOOK_URL:}
+  retention:
+    enabled: true
+    cron: "0 0 2 * * *"
+    security-events-days: 90

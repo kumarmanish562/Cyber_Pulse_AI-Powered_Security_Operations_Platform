@@ -5,8 +5,12 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
+import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
@@ -17,19 +21,24 @@ import tools.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
 import java.time.Clock;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 
 /**
- * Protects public authentication endpoints against brute-force and credential-stuffing attacks
- * using a bounded, per-IP fixed-window rate limiter.
+ * Protects public authentication endpoints against brute-force and credential-stuffing attacks.
+ * Uses Redis for distributed rate limiting across multiple replicas when available, falling back
+ * to a bounded in-memory fixed-window counter otherwise.
  */
 @Component
+@Slf4j
 public class AuthRateLimitFilter extends OncePerRequestFilter {
 
     private static final int MAX_TRACKED_CLIENTS = 10_000;
+    private static final String REDIS_KEY_PREFIX = "cyberpulse:ratelimit:";
 
     private static final Set<String> PROTECTED_PATHS = Set.of(
             "/api/v1/auth/login",
@@ -40,19 +49,30 @@ public class AuthRateLimitFilter extends OncePerRequestFilter {
     );
 
     private final ObjectMapper objectMapper;
+    private final StringRedisTemplate redisTemplate;
     private final boolean enabled;
     private final int maxRequests;
+    private final long windowSeconds;
     private final long windowMillis;
     private final Clock clock;
     private final ConcurrentHashMap<String, WindowCounter> counters = new ConcurrentHashMap<>();
 
+    @Autowired
     public AuthRateLimitFilter(
             ObjectMapper objectMapper,
+            ObjectProvider<StringRedisTemplate> redisTemplateProvider,
             @Value("${cyberpulse.rate-limit.enabled:true}") boolean enabled,
             @Value("${cyberpulse.rate-limit.auth.max-requests:20}") int maxRequests,
             @Value("${cyberpulse.rate-limit.auth.window-seconds:60}") long windowSeconds
     ) {
-        this(objectMapper, enabled, maxRequests, windowSeconds, Clock.systemUTC());
+        this(
+                objectMapper,
+                redisTemplateProvider.getIfAvailable(),
+                enabled,
+                maxRequests,
+                windowSeconds,
+                Clock.systemUTC()
+        );
     }
 
     AuthRateLimitFilter(
@@ -62,10 +82,23 @@ public class AuthRateLimitFilter extends OncePerRequestFilter {
             long windowSeconds,
             Clock clock
     ) {
+        this(objectMapper, null, enabled, maxRequests, windowSeconds, clock);
+    }
+
+    AuthRateLimitFilter(
+            ObjectMapper objectMapper,
+            StringRedisTemplate redisTemplate,
+            boolean enabled,
+            int maxRequests,
+            long windowSeconds,
+            Clock clock
+    ) {
         this.objectMapper = objectMapper;
+        this.redisTemplate = redisTemplate;
         this.enabled = enabled;
         this.maxRequests = Math.max(1, maxRequests);
-        this.windowMillis = Math.max(1L, windowSeconds) * 1000L;
+        this.windowSeconds = Math.max(1L, windowSeconds);
+        this.windowMillis = this.windowSeconds * 1000L;
         this.clock = clock;
     }
 
@@ -88,8 +121,45 @@ public class AuthRateLimitFilter extends OncePerRequestFilter {
     ) throws ServletException, IOException {
 
         String clientKey = resolveClientIp(request) + ":" + request.getRequestURI();
-        long now = clock.millis();
 
+        if (redisTemplate != null) {
+            try {
+                Long retryAfter = checkRedisLimit(clientKey);
+                if (retryAfter != null) {
+                    writeRateLimitResponse(request, response, retryAfter);
+                    return;
+                }
+                filterChain.doFilter(request, response);
+                return;
+            } catch (Exception ex) {
+                log.debug("Redis rate-limit unavailable, falling back to in-memory: {}", ex.getMessage());
+            }
+        }
+
+        Long retryAfter = checkInMemoryLimit(clientKey);
+        if (retryAfter != null) {
+            writeRateLimitResponse(request, response, retryAfter);
+            return;
+        }
+
+        filterChain.doFilter(request, response);
+    }
+
+    private Long checkRedisLimit(String clientKey) {
+        String key = REDIS_KEY_PREFIX + clientKey;
+        Long count = redisTemplate.opsForValue().increment(key);
+        if (count != null && count == 1L) {
+            redisTemplate.expire(key, Duration.ofSeconds(windowSeconds));
+        }
+        if (count != null && count > maxRequests) {
+            Long ttl = redisTemplate.getExpire(key, TimeUnit.SECONDS);
+            return ttl != null && ttl > 0 ? ttl : windowSeconds;
+        }
+        return null;
+    }
+
+    private Long checkInMemoryLimit(String clientKey) {
+        long now = clock.millis();
         if (counters.size() > MAX_TRACKED_CLIENTS) {
             evictExpired(now);
         }
@@ -102,15 +172,12 @@ public class AuthRateLimitFilter extends OncePerRequestFilter {
         });
 
         if (counter.count > maxRequests) {
-            long retryAfterSeconds = Math.max(
+            return Math.max(
                     1L,
                     (counter.windowStartMillis + windowMillis - now + 999L) / 1000L
             );
-            writeRateLimitResponse(request, response, retryAfterSeconds);
-            return;
         }
-
-        filterChain.doFilter(request, response);
+        return null;
     }
 
     private void evictExpired(long now) {

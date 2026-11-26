@@ -69,6 +69,10 @@ cyberpulse:
     from: ${MAIL_FROM:noreply@cyberpulse.local}
   alerting:
     webhook-url: ${ALERT_WEBHOOK_URL:}
+  retention:
+    enabled: true
+    cron: "0 0 2 * * *"
+    security-events-days: 90
 
 
 

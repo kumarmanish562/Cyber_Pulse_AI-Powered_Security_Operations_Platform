@@ -3,6 +3,7 @@ package cyberpulse.auth.repository;
 import cyberpulse.auth.entity.RefreshToken;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -12,4 +13,6 @@ public interface RefreshTokenRepository
     Optional<RefreshToken> findByTokenHash(String tokenHash);
 
     void deleteByUserId(UUID userId);
+
+    long deleteByExpiresAtBefore(Instant cutoff);
 }

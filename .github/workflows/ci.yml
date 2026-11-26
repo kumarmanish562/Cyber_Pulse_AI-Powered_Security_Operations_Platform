@@ -53,9 +53,10 @@ jobs:
           cache: "npm"
           cache-dependency-path: cyberpulse-frontend/package-lock.json
 
-      - name: Install, lint, and build frontend
+      - name: Install, lint, test, and build frontend
         working-directory: cyberpulse-frontend
         run: |
           npm ci
           npm run lint
+          npm test
           npm run build

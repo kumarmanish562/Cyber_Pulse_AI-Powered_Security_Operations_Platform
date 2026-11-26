@@ -84,7 +84,7 @@ public class PasswordResetService {
         resetToken.setUsed(true);
         tokenRepository.save(resetToken);
 
-        refreshTokenRepository.revokeAllByUserId(user.getId());
+        refreshTokenRepository.deleteByUserId(user.getId());
     }
 
     private static String sha256Hex(String value) {

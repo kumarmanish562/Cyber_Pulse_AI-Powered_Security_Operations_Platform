@@ -85,4 +85,6 @@ public interface SecurityEventRepository
             @Param("from") Instant from,
             @Param("to") Instant to
     );
+
+    long deleteByEventTimeBefore(Instant cutoff);
 }
