@@ -55,6 +55,17 @@ export interface MfaSetupResponse {
   otpauthUri: string;
 }
 
+export interface BlockedIp {
+  id: string;
+  ipAddress: string;
+  reason: string;
+  source: string;
+  severity: Severity;
+  active: boolean;
+  expiresAt: string | null;
+  createdAt: string;
+}
+
 export interface ApiErrorResponse {
   timestamp: string;
   status: number;

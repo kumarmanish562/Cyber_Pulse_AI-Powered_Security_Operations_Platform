@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Activity,
   AlertTriangle,
+  Ban,
   Bell,
   FileSearch,
   Gauge,
@@ -42,6 +43,7 @@ const NAV_ITEMS = [
   { to: "/rules", label: "Detection Rules", icon: SlidersHorizontal },
   { to: "/risk-assessments", label: "Risk Assessments", icon: Gauge },
   { to: "/incidents", label: "Incidents", icon: AlertTriangle },
+  { to: "/blocklist", label: "IP Blocklist", icon: Ban },
   { to: "/audit-logs", label: "Audit Logs", icon: FileSearch },
   { to: "/users", label: "Users & RBAC", icon: Users },
   { to: "/api-keys", label: "Service API Keys", icon: KeyRound },
