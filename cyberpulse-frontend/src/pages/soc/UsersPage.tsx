@@ -11,6 +11,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { PageHeader } from "@/components/soc/PageHeader";
 import { api, getApiErrorMessage } from "@/lib/api";
 import type { UserResponse } from "@/types/api";
 
@@ -46,12 +47,14 @@ export function UsersPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight">Users & RBAC</h1>
-        <p className="text-sm text-muted-foreground">
-          Manage platform users and role-based access control assignments.
-        </p>
-      </div>
+      <PageHeader
+        title="Users & RBAC"
+        description="Manage platform users and role-based access control assignments."
+        breadcrumbs={[
+          { label: "Overview", to: "/dashboard" },
+          { label: "Users & RBAC" },
+        ]}
+      />
 
       <Card>
         <CardHeader>

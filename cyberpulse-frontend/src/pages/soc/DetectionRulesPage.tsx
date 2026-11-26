@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, ShieldCheck, SlidersHorizontal, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -23,7 +23,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { PageHeader } from "@/components/soc/PageHeader";
 import { SeverityBadge } from "@/components/soc/SeverityBadge";
+import { StatCard } from "@/components/soc/StatCard";
 import { api, getApiErrorMessage } from "@/lib/api";
 import type {
   CreateDetectionRulePayload,
@@ -90,43 +92,46 @@ export function DetectionRulesPage() {
     onError: (err) => toast.error(getApiErrorMessage(err)),
   });
 
+  const rules = data?.content ?? [];
+  const enabledCount = rules.filter((r) => r.enabled).length;
+
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Detection Rules</h1>
-          <p className="text-sm text-muted-foreground">
-            Manage thresholds and time windows for automated threat detection.
-          </p>
-        </div>
-
-        <Dialog open={open} onOpenChange={setOpen}>
-          <DialogTrigger render={<Button />}>
-            <Plus className="mr-2 h-4 w-4" />
-            New Rule
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Create Detection Rule</DialogTitle>
-            </DialogHeader>
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                createMutation.mutate(form);
-              }}
-              className="space-y-4"
-            >
-              <div className="space-y-1">
-                <Label>Rule Name</Label>
-                <Input
-                  required
-                  value={form.name}
-                  onChange={(e) =>
-                    setForm((f) => ({ ...f, name: e.target.value }))
-                  }
-                  placeholder="SSH Brute Force Threshold"
-                />
-              </div>
+      <PageHeader
+        title="Detection Rules"
+        description="Manage thresholds and time windows for automated threat detection."
+        breadcrumbs={[
+          { label: "Overview", to: "/dashboard" },
+          { label: "Detection Rules" },
+        ]}
+        actions={
+          <Dialog open={open} onOpenChange={setOpen}>
+            <DialogTrigger render={<Button />}>
+              <Plus className="mr-2 h-4 w-4" />
+              New Rule
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Create Detection Rule</DialogTitle>
+              </DialogHeader>
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  createMutation.mutate(form);
+                }}
+                className="space-y-4"
+              >
+                <div className="space-y-1">
+                  <Label>Rule Name</Label>
+                  <Input
+                    required
+                    value={form.name}
+                    onChange={(e) =>
+                      setForm((f) => ({ ...f, name: e.target.value }))
+                    }
+                    placeholder="SSH Brute Force Threshold"
+                  />
+                </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1">
@@ -218,6 +223,26 @@ export function DetectionRulesPage() {
             </form>
           </DialogContent>
         </Dialog>
+        }
+      />
+
+      <div className="grid gap-4 sm:grid-cols-2">
+        <StatCard
+          title="Configured Rules"
+          value={data?.totalElements ?? rules.length}
+          subtitle="Total detection evaluators"
+          icon={<SlidersHorizontal className="h-4 w-4 text-blue-500" />}
+          loading={isLoading}
+          accentClassName="border-t-blue-500/70"
+        />
+        <StatCard
+          title="Active Rules"
+          value={enabledCount}
+          subtitle="Currently evaluating telemetry"
+          icon={<ShieldCheck className="h-4 w-4 text-emerald-500" />}
+          loading={isLoading}
+          accentClassName="border-t-emerald-500/70"
+        />
       </div>
 
       <Card>

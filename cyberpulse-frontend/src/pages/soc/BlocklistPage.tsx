@@ -23,6 +23,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { PageHeader } from "@/components/soc/PageHeader";
 import { SeverityBadge } from "@/components/soc/SeverityBadge";
 import { api, getApiErrorMessage } from "@/lib/api";
 import type { BlockedIp, Severity } from "@/types/api";
@@ -68,35 +69,34 @@ export function BlocklistPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">IP Blocklist</h1>
-          <p className="text-sm text-muted-foreground">
-            Active containment list populated automatically from high-risk
-            incidents or manually by SOC analysts.
-          </p>
-        </div>
+      <PageHeader
+        title="IP Blocklist"
+        description="Active containment list populated automatically from high-risk incidents or manually by SOC analysts."
+        breadcrumbs={[
+          { label: "Overview", to: "/dashboard" },
+          { label: "IP Blocklist" },
+        ]}
+        actions={
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() =>
+                downloadExportFile(
+                  "/api/v1/blocklist/feed",
+                  "cyberpulse-blocklist.txt",
+                ).catch(() => toast.error("Failed to download feed"))
+              }
+            >
+              <Download className="mr-1 h-4 w-4" />
+              Firewall Feed (.txt)
+            </Button>
 
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() =>
-              downloadExportFile(
-                "/api/v1/blocklist/feed",
-                "cyberpulse-blocklist.txt",
-              ).catch(() => toast.error("Failed to download feed"))
-            }
-          >
-            <Download className="mr-1 h-4 w-4" />
-            Firewall Feed (.txt)
-          </Button>
-
-          <Dialog open={open} onOpenChange={setOpen}>
-            <DialogTrigger render={<Button />}>
-              <Plus className="mr-2 h-4 w-4" />
-              Block IP
-            </DialogTrigger>
+            <Dialog open={open} onOpenChange={setOpen}>
+              <DialogTrigger render={<Button />}>
+                <Plus className="mr-2 h-4 w-4" />
+                Block IP
+              </DialogTrigger>
             <DialogContent>
               <DialogHeader>
                 <DialogTitle className="flex items-center gap-2">
@@ -152,7 +152,8 @@ export function BlocklistPage() {
             </DialogContent>
           </Dialog>
         </div>
-      </div>
+        }
+      />
 
       <Card>
         <CardHeader>

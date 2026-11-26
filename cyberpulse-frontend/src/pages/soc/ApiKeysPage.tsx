@@ -24,6 +24,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { PageHeader } from "@/components/soc/PageHeader";
 import { api, getApiErrorMessage } from "@/lib/api";
 import type { CreateApiKeyResponse, ServiceApiKey } from "@/types/api";
 import { formatDateTime } from "@/utils/format";
@@ -70,22 +71,19 @@ export function ApiKeysPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">
-            Service API Keys
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            Issue scoped <code className="font-mono">X-API-Key</code> tokens for
-            FluentBit, Filebeat, and SIEM log shippers.
-          </p>
-        </div>
-
-        <Dialog open={open} onOpenChange={setOpen}>
-          <DialogTrigger render={<Button />}>
-            <Plus className="mr-2 h-4 w-4" />
-            Create API Key
-          </DialogTrigger>
+      <PageHeader
+        title="Service API Keys"
+        description="Issue scoped X-API-Key tokens for FluentBit, Filebeat, and SIEM log shippers."
+        breadcrumbs={[
+          { label: "Overview", to: "/dashboard" },
+          { label: "Service API Keys" },
+        ]}
+        actions={
+          <Dialog open={open} onOpenChange={setOpen}>
+            <DialogTrigger render={<Button />}>
+              <Plus className="mr-2 h-4 w-4" />
+              Create API Key
+            </DialogTrigger>
           <DialogContent>
             <DialogHeader>
               <DialogTitle>Create Service API Key</DialogTitle>
@@ -123,7 +121,8 @@ export function ApiKeysPage() {
             </form>
           </DialogContent>
         </Dialog>
-      </div>
+        }
+      />
 
       {createdRawKey && (
         <Alert>

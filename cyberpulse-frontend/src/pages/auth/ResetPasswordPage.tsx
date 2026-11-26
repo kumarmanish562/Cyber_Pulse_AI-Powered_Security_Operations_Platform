@@ -4,6 +4,10 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import { z } from "zod";
+import {
+  PasswordInput,
+  PasswordStrengthBar,
+} from "@/components/soc/PasswordInput";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
@@ -42,12 +46,15 @@ export function ResetPasswordPage() {
 
   const {
     register,
+    watch,
     handleSubmit,
     formState: { errors },
   } = useForm<FormValues>({
     resolver: zodResolver(schema),
     defaultValues: { token: searchParams.get("token") ?? "" },
   });
+
+  const passwordValue = watch("newPassword") ?? "";
 
   const onSubmit = async (values: FormValues) => {
     setSubmitting(true);
@@ -69,11 +76,11 @@ export function ResetPasswordPage() {
   };
 
   return (
-    <Card>
+    <Card className="border-border/70 bg-card/90 shadow-xl backdrop-blur">
       <CardHeader>
-        <CardTitle className="text-2xl">Reset password</CardTitle>
+        <CardTitle className="text-2xl">Reset Password</CardTitle>
         <CardDescription>
-          Enter your reset token and choose a new password.
+          Enter your recovery token and choose a strong new password.
         </CardDescription>
       </CardHeader>
 
@@ -95,11 +102,8 @@ export function ResetPasswordPage() {
 
           <div className="space-y-2">
             <Label htmlFor="newPassword">New Password</Label>
-            <Input
-              id="newPassword"
-              type="password"
-              {...register("newPassword")}
-            />
+            <PasswordInput id="newPassword" {...register("newPassword")} />
+            <PasswordStrengthBar password={passwordValue} />
             {errors.newPassword && (
               <p className="text-xs text-destructive">
                 {errors.newPassword.message}
@@ -108,10 +112,9 @@ export function ResetPasswordPage() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="confirmPassword">Confirm Password</Label>
-            <Input
+            <Label htmlFor="confirmPassword">Confirm New Password</Label>
+            <PasswordInput
               id="confirmPassword"
-              type="password"
               {...register("confirmPassword")}
             />
             {errors.confirmPassword && (
@@ -130,7 +133,7 @@ export function ResetPasswordPage() {
             to="/login"
             className="text-xs text-muted-foreground hover:underline"
           >
-            Back to Sign In
+            Back to Login
           </Link>
         </CardFooter>
       </form>

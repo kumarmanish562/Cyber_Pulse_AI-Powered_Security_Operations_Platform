@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { PageHeader } from "@/components/soc/PageHeader";
 import { useAuth } from "@/context/AuthContext";
 import { api, getApiErrorMessage } from "@/lib/api";
 import type { MfaSetupResponse } from "@/types/api";
@@ -58,14 +59,14 @@ export function SecuritySettingsPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight">
-          Account Security &amp; 2FA
-        </h1>
-        <p className="text-sm text-muted-foreground">
-          Protect your SOC account with RFC 6238 TOTP two-factor authentication.
-        </p>
-      </div>
+      <PageHeader
+        title="Account Security & 2FA"
+        description="Protect your SOC account with RFC 6238 TOTP two-factor authentication."
+        breadcrumbs={[
+          { label: "Overview", to: "/dashboard" },
+          { label: "Security (2FA)" },
+        ]}
+      />
 
       <Card className="max-w-xl">
         <CardHeader>

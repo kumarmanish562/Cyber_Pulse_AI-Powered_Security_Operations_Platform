@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { PageHeader } from "@/components/soc/PageHeader";
 import { api, getApiErrorMessage } from "@/lib/api";
 import type { IpThreatIntelResponse } from "@/types/api";
 import { formatDateTime } from "@/utils/format";
@@ -33,15 +34,14 @@ export function ThreatIntelPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight">
-          Threat Intelligence Lookup
-        </h1>
-        <p className="text-sm text-muted-foreground">
-          Inspect IP reputation across internal SOC telemetry, active blocklist,
-          and AbuseIPDB enrichment.
-        </p>
-      </div>
+      <PageHeader
+        title="Threat Intelligence Lookup"
+        description="Inspect IP reputation across internal SOC telemetry, active blocklist, and AbuseIPDB enrichment."
+        breadcrumbs={[
+          { label: "Overview", to: "/dashboard" },
+          { label: "Threat Intel" },
+        ]}
+      />
 
       <Card className="max-w-2xl">
         <CardHeader>

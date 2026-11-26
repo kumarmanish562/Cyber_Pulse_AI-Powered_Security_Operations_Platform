@@ -47,21 +47,36 @@ import type {
   PageResponse,
 } from "@/types/api";
 
-const NAV_ITEMS = [
-  { to: "/dashboard", label: "Overview", icon: LayoutDashboard },
-  { to: "/events", label: "Security Events", icon: Activity },
-  { to: "/detections", label: "Threat Detections", icon: ShieldAlert },
-  { to: "/rules", label: "Detection Rules", icon: SlidersHorizontal },
-  { to: "/risk-assessments", label: "Risk Assessments", icon: Gauge },
-  { to: "/incidents", label: "Incidents", icon: AlertTriangle },
-  { to: "/blocklist", label: "IP Blocklist", icon: Ban },
-  { to: "/threat-intel", label: "Threat Intel", icon: Radar },
-  { to: "/simulator", label: "Attack Simulator", icon: Flame },
-  { to: "/reports", label: "Shift Reports", icon: FileText },
-  { to: "/audit-logs", label: "Audit Logs", icon: FileSearch },
-  { to: "/users", label: "Users & RBAC", icon: Users },
-  { to: "/api-keys", label: "Service API Keys", icon: KeyRound },
-  { to: "/security", label: "Security (2FA)", icon: Lock },
+const NAV_GROUPS = [
+  {
+    label: "Core Operations",
+    items: [
+      { to: "/dashboard", label: "Overview", icon: LayoutDashboard },
+      { to: "/events", label: "Security Events", icon: Activity },
+      { to: "/detections", label: "Threat Detections", icon: ShieldAlert },
+      { to: "/rules", label: "Detection Rules", icon: SlidersHorizontal },
+      { to: "/risk-assessments", label: "Risk Assessments", icon: Gauge },
+      { to: "/incidents", label: "Incidents", icon: AlertTriangle },
+    ],
+  },
+  {
+    label: "Intelligence & Containment",
+    items: [
+      { to: "/blocklist", label: "IP Blocklist", icon: Ban },
+      { to: "/threat-intel", label: "Threat Intel", icon: Radar },
+      { to: "/simulator", label: "Attack Simulator", icon: Flame },
+      { to: "/reports", label: "Shift Reports", icon: FileText },
+    ],
+  },
+  {
+    label: "Governance & Access",
+    items: [
+      { to: "/audit-logs", label: "Audit Logs", icon: FileSearch },
+      { to: "/users", label: "Users & RBAC", icon: Users },
+      { to: "/api-keys", label: "Service API Keys", icon: KeyRound },
+      { to: "/security", label: "Security (2FA)", icon: Lock },
+    ],
+  },
 ];
 
 export function DashboardLayout() {
@@ -130,43 +145,59 @@ export function DashboardLayout() {
   const unreadCount = unreadCountData?.count ?? 0;
 
   const navList = (onNavigate?: () => void) => (
-    <nav className="flex flex-col gap-1 px-3 py-4">
-      {NAV_ITEMS.map((item) => {
-        const Icon = item.icon;
-        return (
-          <NavLink
-            key={item.to}
-            to={item.to}
-            onClick={onNavigate}
-            className={({ isActive }) =>
-              cn(
-                "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
-                isActive
-                  ? "bg-primary text-primary-foreground"
-                  : "text-muted-foreground hover:bg-muted hover:text-foreground",
-              )
-            }
-          >
-            <Icon className="h-4 w-4" />
-            {item.label}
-          </NavLink>
-        );
-      })}
+    <nav className="flex flex-col gap-5 px-3 py-4">
+      {NAV_GROUPS.map((group) => (
+        <div key={group.label} className="space-y-1">
+          <div className="px-3 pb-1 text-[10px] font-semibold tracking-wider text-muted-foreground/80 uppercase">
+            {group.label}
+          </div>
+          {group.items.map((item) => {
+            const Icon = item.icon;
+            return (
+              <NavLink
+                key={item.to}
+                to={item.to}
+                onClick={onNavigate}
+                className={({ isActive }) =>
+                  cn(
+                    "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all",
+                    isActive
+                      ? "bg-primary/12 text-primary shadow-[inset_2px_0_0_0_var(--color-primary)]"
+                      : "text-muted-foreground hover:bg-muted/70 hover:text-foreground",
+                  )
+                }
+              >
+                <Icon className="h-4 w-4 shrink-0" />
+                <span className="truncate">{item.label}</span>
+              </NavLink>
+            );
+          })}
+        </div>
+      ))}
     </nav>
   );
+
+  const initials = (user?.username || "OP").slice(0, 2).toUpperCase();
 
   return (
     <div className="flex min-h-screen bg-muted/20 text-foreground">
       {/* Desktop Sidebar */}
-      <aside className="hidden w-64 shrink-0 border-r bg-background lg:flex lg:flex-col">
-        <div className="flex h-16 items-center gap-2 border-b px-6">
-          <ShieldCheck className="h-5 w-5 text-primary" />
-          <Link to="/dashboard" className="font-semibold tracking-tight">
-            CyberPulse SOC
+      <aside className="hidden w-64 shrink-0 border-r border-border/60 bg-background/95 backdrop-blur lg:flex lg:flex-col">
+        <div className="flex h-16 items-center gap-2.5 border-b border-border/60 px-5">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500 to-cyan-400 text-white shadow-sm shadow-blue-500/25">
+            <ShieldCheck className="h-4.5 w-4.5" />
+          </div>
+          <Link to="/dashboard" className="flex flex-col">
+            <span className="text-sm font-semibold tracking-tight">
+              CyberPulse
+            </span>
+            <span className="text-[10px] font-medium tracking-wider text-muted-foreground uppercase">
+              SOC Platform
+            </span>
           </Link>
         </div>
         <div className="flex-1 overflow-y-auto">{navList()}</div>
-        <div className="border-t p-4 text-xs text-muted-foreground">
+        <div className="border-t border-border/60 p-4 text-xs text-muted-foreground">
           <div className="font-medium text-foreground">{user?.username}</div>
           <div className="truncate">{user?.email}</div>
           <div className="mt-2 flex flex-wrap gap-1">
@@ -333,10 +364,49 @@ export function DashboardLayout() {
               </DropdownMenuContent>
             </DropdownMenu>
 
-            <Button variant="ghost" size="sm" onClick={handleLogout}>
-              <LogOut className="mr-2 h-4 w-4" />
-              Sign out
-            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger
+                render={
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="gap-2 pl-1.5"
+                  />
+                }
+              >
+                <span className="flex h-6 w-6 items-center justify-center rounded-md bg-primary/15 text-[11px] font-semibold text-primary">
+                  {initials}
+                </span>
+                <span className="hidden max-w-28 truncate text-xs font-medium md:inline">
+                  {user?.username || "Analyst"}
+                </span>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuLabel className="space-y-1">
+                  <div className="text-xs font-semibold">{user?.username}</div>
+                  <div className="truncate text-[11px] font-normal text-muted-foreground">
+                    {user?.email}
+                  </div>
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => navigate("/security")}>
+                  <Lock className="mr-2 h-3.5 w-3.5" />
+                  Security &amp; 2FA
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate("/reports")}>
+                  <FileText className="mr-2 h-3.5 w-3.5" />
+                  Shift Reports
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onClick={handleLogout}
+                  className="text-red-500 focus:text-red-500"
+                >
+                  <LogOut className="mr-2 h-3.5 w-3.5" />
+                  Sign out
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </header>
 

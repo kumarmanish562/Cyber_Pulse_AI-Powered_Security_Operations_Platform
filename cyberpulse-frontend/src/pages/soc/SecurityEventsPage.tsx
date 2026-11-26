@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Plus } from "lucide-react";
+import { Activity, Eye, Globe, Plus, Search, ShieldAlert } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -22,7 +22,10 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { PageHeader } from "@/components/soc/PageHeader";
 import { SeverityBadge } from "@/components/soc/SeverityBadge";
+import { StatCard } from "@/components/soc/StatCard";
+import { EmptyState, LoadingSpinner } from "@/components/soc/StateViews";
 import { formatDateTime } from "@/utils/format";
 import { api, getApiErrorMessage } from "@/lib/api";
 import type {
@@ -52,6 +55,10 @@ export function SecurityEventsPage() {
   const [page, setPage] = useState(0);
   const [severityFilter, setSeverityFilter] = useState("");
   const [eventTypeFilter, setEventTypeFilter] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedEvent, setSelectedEvent] = useState<SecurityEvent | null>(
+    null,
+  );
   const [open, setOpen] = useState(false);
 
   const [form, setForm] = useState<CreateSecurityEventPayload>({
@@ -96,127 +103,182 @@ export function SecurityEventsPage() {
     });
   };
 
+  const filteredEvents = (data?.content ?? []).filter((ev) => {
+    if (!searchQuery.trim()) return true;
+    const q = searchQuery.toLowerCase();
+    return (
+      ev.eventType.toLowerCase().includes(q) ||
+      (ev.sourceIp ?? "").toLowerCase().includes(q) ||
+      (ev.username ?? "").toLowerCase().includes(q) ||
+      (ev.service ?? "").toLowerCase().includes(q) ||
+      (ev.message ?? "").toLowerCase().includes(q)
+    );
+  });
+
+  const highCritCount = (data?.content ?? []).filter(
+    (e) => e.severity === "HIGH" || e.severity === "CRITICAL",
+  ).length;
+  const uniqueIps = new Set(
+    (data?.content ?? []).map((e) => e.sourceIp).filter(Boolean),
+  ).size;
+
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Security Events</h1>
-          <p className="text-sm text-muted-foreground">
-            Ingest and filter telemetry across authentication, network, and host
-            sources.
-          </p>
-        </div>
-
-        <Dialog open={open} onOpenChange={setOpen}>
-          <DialogTrigger render={<Button />}>
-            <Plus className="mr-2 h-4 w-4" />
-            Ingest Event
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Ingest Security Event</DialogTitle>
-            </DialogHeader>
-            <form onSubmit={handleCreate} className="space-y-4">
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1">
-                  <Label>Event Type</Label>
-                  <select
-                    className="flex h-9 w-full rounded-md border bg-background px-3 text-sm"
-                    value={form.eventType}
-                    onChange={(e) =>
-                      setForm((f) => ({
-                        ...f,
-                        eventType: e.target.value as EventType,
-                      }))
-                    }
-                  >
-                    {EVENT_TYPES.map((t) => (
-                      <option key={t} value={t}>
-                        {t}
-                      </option>
-                    ))}
-                  </select>
+      <PageHeader
+        title="Security Events"
+        description="Ingest and filter telemetry across authentication, network, and host sources."
+        breadcrumbs={[
+          { label: "Overview", to: "/dashboard" },
+          { label: "Security Events" },
+        ]}
+        actions={
+          <Dialog open={open} onOpenChange={setOpen}>
+            <DialogTrigger render={<Button />}>
+              <Plus className="mr-2 h-4 w-4" />
+              Ingest Event
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Ingest Security Event</DialogTitle>
+              </DialogHeader>
+              <form onSubmit={handleCreate} className="space-y-4">
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1">
+                    <Label>Event Type</Label>
+                    <select
+                      className="flex h-9 w-full rounded-md border bg-background px-3 text-sm"
+                      value={form.eventType}
+                      onChange={(e) =>
+                        setForm((f) => ({
+                          ...f,
+                          eventType: e.target.value as EventType,
+                        }))
+                      }
+                    >
+                      {EVENT_TYPES.map((t) => (
+                        <option key={t} value={t}>
+                          {t}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="space-y-1">
+                    <Label>Severity</Label>
+                    <select
+                      className="flex h-9 w-full rounded-md border bg-background px-3 text-sm"
+                      value={form.severity}
+                      onChange={(e) =>
+                        setForm((f) => ({
+                          ...f,
+                          severity: e.target.value as Severity,
+                        }))
+                      }
+                    >
+                      {SEVERITIES.map((s) => (
+                        <option key={s} value={s}>
+                          {s}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
-                <div className="space-y-1">
-                  <Label>Severity</Label>
-                  <select
-                    className="flex h-9 w-full rounded-md border bg-background px-3 text-sm"
-                    value={form.severity}
-                    onChange={(e) =>
-                      setForm((f) => ({
-                        ...f,
-                        severity: e.target.value as Severity,
-                      }))
-                    }
-                  >
-                    {SEVERITIES.map((s) => (
-                      <option key={s} value={s}>
-                        {s}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
 
-              <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1">
+                    <Label>Source IP</Label>
+                    <Input
+                      value={form.sourceIp ?? ""}
+                      onChange={(e) =>
+                        setForm((f) => ({ ...f, sourceIp: e.target.value }))
+                      }
+                      placeholder="192.168.1.50"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label>Username</Label>
+                    <Input
+                      value={form.username ?? ""}
+                      onChange={(e) =>
+                        setForm((f) => ({ ...f, username: e.target.value }))
+                      }
+                      placeholder="jdoe"
+                    />
+                  </div>
+                </div>
+
                 <div className="space-y-1">
-                  <Label>Source IP</Label>
+                  <Label>Service</Label>
                   <Input
-                    value={form.sourceIp ?? ""}
+                    value={form.service ?? ""}
                     onChange={(e) =>
-                      setForm((f) => ({ ...f, sourceIp: e.target.value }))
+                      setForm((f) => ({ ...f, service: e.target.value }))
                     }
-                    placeholder="192.168.1.50"
+                    placeholder="auth-gateway"
                   />
                 </div>
+
                 <div className="space-y-1">
-                  <Label>Username</Label>
+                  <Label>Message</Label>
                   <Input
-                    value={form.username ?? ""}
+                    value={form.message ?? ""}
                     onChange={(e) =>
-                      setForm((f) => ({ ...f, username: e.target.value }))
+                      setForm((f) => ({ ...f, message: e.target.value }))
                     }
-                    placeholder="jdoe"
+                    placeholder="Multiple failed login attempts"
                   />
                 </div>
-              </div>
 
-              <div className="space-y-1">
-                <Label>Service</Label>
-                <Input
-                  value={form.service ?? ""}
-                  onChange={(e) =>
-                    setForm((f) => ({ ...f, service: e.target.value }))
-                  }
-                  placeholder="auth-gateway"
-                />
-              </div>
+                <DialogFooter>
+                  <Button type="submit" disabled={createMutation.isPending}>
+                    {createMutation.isPending ? "Ingesting..." : "Submit Event"}
+                  </Button>
+                </DialogFooter>
+              </form>
+            </DialogContent>
+          </Dialog>
+        }
+      />
 
-              <div className="space-y-1">
-                <Label>Message</Label>
-                <Input
-                  value={form.message ?? ""}
-                  onChange={(e) =>
-                    setForm((f) => ({ ...f, message: e.target.value }))
-                  }
-                  placeholder="Multiple failed login attempts"
-                />
-              </div>
-
-              <DialogFooter>
-                <Button type="submit" disabled={createMutation.isPending}>
-                  {createMutation.isPending ? "Ingesting..." : "Submit Event"}
-                </Button>
-              </DialogFooter>
-            </form>
-          </DialogContent>
-        </Dialog>
+      <div className="grid gap-4 sm:grid-cols-3">
+        <StatCard
+          title="Total Events"
+          value={data?.totalElements ?? 0}
+          subtitle="Across all telemetry streams"
+          icon={<Activity className="h-4 w-4 text-blue-500" />}
+          loading={isLoading}
+          accentClassName="border-t-blue-500/70"
+        />
+        <StatCard
+          title="High / Critical (Page)"
+          value={highCritCount}
+          subtitle="Elevated severity events in view"
+          icon={<ShieldAlert className="h-4 w-4 text-red-500" />}
+          loading={isLoading}
+          accentClassName="border-t-red-500/70"
+        />
+        <StatCard
+          title="Unique Source IPs"
+          value={uniqueIps}
+          subtitle="Distinct origins on current page"
+          icon={<Globe className="h-4 w-4 text-cyan-500" />}
+          loading={isLoading}
+          accentClassName="border-t-cyan-500/70"
+        />
       </div>
 
       <Card>
         <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-3">
           <CardTitle className="text-base">Event Stream</CardTitle>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
+            <div className="relative">
+              <Search className="pointer-events-none absolute top-2.5 left-2.5 h-4 w-4 text-muted-foreground" />
+              <Input
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search IP, user, service..."
+                className="h-9 w-48 pl-8 text-sm"
+              />
+            </div>
             <select
               className="h-9 rounded-md border bg-background px-3 text-sm"
               value={eventTypeFilter}
@@ -260,17 +322,18 @@ export function SecurityEventsPage() {
                 <TableHead>User</TableHead>
                 <TableHead>Service</TableHead>
                 <TableHead>Event Time</TableHead>
+                <TableHead className="text-right">Details</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {isLoading ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center">
-                    Loading events...
+                  <TableCell colSpan={7}>
+                    <LoadingSpinner label="Loading security events..." />
                   </TableCell>
                 </TableRow>
-              ) : data?.content.length ? (
-                data.content.map((ev) => (
+              ) : filteredEvents.length ? (
+                filteredEvents.map((ev) => (
                   <TableRow key={ev.id}>
                     <TableCell className="font-mono text-xs">
                       {ev.eventType}
@@ -286,15 +349,24 @@ export function SecurityEventsPage() {
                     <TableCell className="text-xs text-muted-foreground">
                       {formatDateTime(ev.eventTime)}
                     </TableCell>
+                    <TableCell className="text-right">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setSelectedEvent(ev)}
+                      >
+                        <Eye className="h-3.5 w-3.5" />
+                      </Button>
+                    </TableCell>
                   </TableRow>
                 ))
               ) : (
                 <TableRow>
-                  <TableCell
-                    colSpan={6}
-                    className="text-center text-muted-foreground"
-                  >
-                    No security events found.
+                  <TableCell colSpan={7}>
+                    <EmptyState
+                      title="No security events found"
+                      description="Ingest an event or adjust your active filters."
+                    />
                   </TableCell>
                 </TableRow>
               )}
@@ -327,6 +399,55 @@ export function SecurityEventsPage() {
           </div>
         </CardContent>
       </Card>
+
+      <Dialog
+        open={Boolean(selectedEvent)}
+        onOpenChange={(v) => !v && setSelectedEvent(null)}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="font-mono text-sm">
+              {selectedEvent?.eventType}
+            </DialogTitle>
+          </DialogHeader>
+          {selectedEvent && (
+            <div className="space-y-3 text-sm">
+              <div className="flex items-center justify-between">
+                <span className="text-muted-foreground">Severity</span>
+                <SeverityBadge severity={selectedEvent.severity} />
+              </div>
+              <div className="grid grid-cols-2 gap-2 rounded-lg border bg-muted/30 p-3 text-xs">
+                <div>
+                  <span className="text-muted-foreground">Source IP: </span>
+                  <span className="font-mono">
+                    {selectedEvent.sourceIp ?? "—"}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-muted-foreground">Username: </span>
+                  <span>{selectedEvent.username ?? "—"}</span>
+                </div>
+                <div>
+                  <span className="text-muted-foreground">Service: </span>
+                  <span>{selectedEvent.service ?? "—"}</span>
+                </div>
+                <div>
+                  <span className="text-muted-foreground">Time: </span>
+                  <span>{formatDateTime(selectedEvent.eventTime)}</span>
+                </div>
+              </div>
+              <div>
+                <div className="mb-1 text-xs font-medium text-muted-foreground">
+                  Message
+                </div>
+                <div className="rounded-lg border bg-muted/20 p-3 text-xs">
+                  {selectedEvent.message || "No message payload."}
+                </div>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

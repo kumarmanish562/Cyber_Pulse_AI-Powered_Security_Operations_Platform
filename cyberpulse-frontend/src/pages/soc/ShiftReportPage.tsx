@@ -1,9 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
-import { Download, FileText } from "lucide-react";
+import { Download } from "lucide-react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { PageHeader } from "@/components/soc/PageHeader";
+import { LoadingSpinner } from "@/components/soc/StateViews";
 import { api } from "@/lib/api";
 import type { ShiftHandoverReport } from "@/types/api";
 import { downloadExportFile } from "@/utils/download";
@@ -19,35 +21,32 @@ export function ShiftReportPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <div>
-          <h1 className="flex items-center gap-2 text-2xl font-bold tracking-tight">
-            <FileText className="h-6 w-6 text-primary" />
-            <span>SOC Shift Handover Report</span>
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            24-hour executive posture, SLA compliance, and MITRE ATT&amp;CK
-            handover summary.
-          </p>
-        </div>
-
-        <Button
-          onClick={() =>
-            downloadExportFile(
-              "/api/v1/reports/shift-handover/download",
-              "soc-shift-handover.md",
-            ).catch(() => toast.error("Failed to download report"))
-          }
-        >
-          <Download className="mr-2 h-4 w-4" />
-          Download Markdown (.md)
-        </Button>
-      </div>
+      <PageHeader
+        title="SOC Shift Handover Report"
+        description="24-hour executive posture, SLA compliance, and MITRE ATT&CK handover summary."
+        breadcrumbs={[
+          { label: "Overview", to: "/dashboard" },
+          { label: "Shift Reports" },
+        ]}
+        actions={
+          <Button
+            onClick={() =>
+              downloadExportFile(
+                "/api/v1/reports/shift-handover/download",
+                "soc-shift-handover.md",
+              ).catch(() => toast.error("Failed to download report"))
+            }
+          >
+            <Download className="mr-2 h-4 w-4" />
+            Download Markdown (.md)
+          </Button>
+        }
+      />
 
       {isLoading || !report ? (
         <Card>
-          <CardContent className="p-6 text-sm text-muted-foreground">
-            Generating 24-hour SOC shift handover report...
+          <CardContent className="p-6">
+            <LoadingSpinner label="Generating 24-hour SOC shift handover report..." />
           </CardContent>
         </Card>
       ) : (

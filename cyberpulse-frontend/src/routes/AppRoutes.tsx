@@ -11,6 +11,12 @@ import { ForgotPasswordPage } from "@/pages/auth/ForgotPasswordPage";
 import { LoginPage } from "@/pages/auth/LoginPage";
 import { ResetPasswordPage } from "@/pages/auth/ResetPasswordPage";
 import { SignupPage } from "@/pages/auth/SignupPage";
+import { VerifyEmailPage } from "@/pages/auth/VerifyEmailPage";
+import {
+  NotFoundPage,
+  ServerErrorPage,
+  UnauthorizedPage,
+} from "@/pages/errors/ErrorPages";
 import { LandingPage } from "@/pages/landing/LandingPage";
 
 const DashboardPage = lazy(() =>
@@ -110,6 +116,10 @@ export function AppRoutes() {
             </Route>
           </Route>
 
+          <Route element={<AuthLayout />}>
+            <Route path="/verify-email" element={<VerifyEmailPage />} />
+          </Route>
+
           <Route element={<ProtectedRoute />}>
             <Route element={<DashboardLayout />}>
               <Route path="/dashboard" element={<DashboardPage />} />
@@ -128,6 +138,10 @@ export function AppRoutes() {
               <Route path="/security" element={<SecuritySettingsPage />} />
             </Route>
           </Route>
+
+          <Route path="/unauthorized" element={<UnauthorizedPage />} />
+          <Route path="/500" element={<ServerErrorPage />} />
+          <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </Suspense>
     </BrowserRouter>

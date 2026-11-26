@@ -13,6 +13,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { PageHeader } from "@/components/soc/PageHeader";
 import { formatDateTime } from "@/utils/format";
 import { api } from "@/lib/api";
 import type { AuditLog, PageResponse } from "@/types/api";
@@ -32,44 +33,44 @@ export function AuditLogsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Audit Logs</h1>
-          <p className="text-sm text-muted-foreground">
-            Immutable trail of security and incident operations across the
-            platform.
-          </p>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() =>
-              downloadExportFile(
-                "/api/v1/audit-logs/export?format=csv",
-                "audit-logs-export.csv",
-              ).catch(() => toast.error("Export failed"))
-            }
-          >
-            <Download className="mr-1 h-4 w-4" />
-            CSV
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() =>
-              downloadExportFile(
-                "/api/v1/audit-logs/export?format=json",
-                "audit-logs-export.json",
-              ).catch(() => toast.error("Export failed"))
-            }
-          >
-            <Download className="mr-1 h-4 w-4" />
-            JSON
-          </Button>
-        </div>
-      </div>
+      <PageHeader
+        title="Audit Logs"
+        description="Immutable trail of security and incident operations across the platform."
+        breadcrumbs={[
+          { label: "Overview", to: "/dashboard" },
+          { label: "Audit Logs" },
+        ]}
+        actions={
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() =>
+                downloadExportFile(
+                  "/api/v1/audit-logs/export?format=csv",
+                  "audit-logs-export.csv",
+                ).catch(() => toast.error("Export failed"))
+              }
+            >
+              <Download className="mr-1 h-4 w-4" />
+              CSV
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() =>
+                downloadExportFile(
+                  "/api/v1/audit-logs/export?format=json",
+                  "audit-logs-export.json",
+                ).catch(() => toast.error("Export failed"))
+              }
+            >
+              <Download className="mr-1 h-4 w-4" />
+              JSON
+            </Button>
+          </div>
+        }
+      />
 
       <Card>
         <CardHeader>

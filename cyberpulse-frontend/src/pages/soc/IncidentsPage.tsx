@@ -1,6 +1,14 @@
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Download, Plus, Sparkles } from "lucide-react";
+import {
+  AlertTriangle,
+  Download,
+  Flame,
+  Plus,
+  Search,
+  ShieldAlert,
+  Sparkles,
+} from "lucide-react";
 import { toast } from "sonner";
 import { downloadExportFile } from "@/utils/download";
 import { Badge } from "@/components/ui/badge";
@@ -24,10 +32,13 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { PageHeader } from "@/components/soc/PageHeader";
 import {
   IncidentStatusBadge,
   SeverityBadge,
 } from "@/components/soc/SeverityBadge";
+import { StatCard } from "@/components/soc/StatCard";
+import { EmptyState, LoadingSpinner } from "@/components/soc/StateViews";
 import { formatDateTime } from "@/utils/format";
 import { api, getApiErrorMessage } from "@/lib/api";
 import type {
@@ -53,6 +64,7 @@ export function IncidentsPage() {
   const queryClient = useQueryClient();
   const [page, setPage] = useState(0);
   const [statusFilter, setStatusFilter] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
   const [createOpen, setCreateOpen] = useState(false);
   const [selectedIncident, setSelectedIncident] = useState<Incident | null>(
     null,
@@ -149,131 +161,186 @@ export function IncidentsPage() {
     onError: (err) => toast.error(getApiErrorMessage(err)),
   });
 
+  const items = data?.content ?? [];
+  const filteredIncidents = items.filter((inc) => {
+    if (!searchQuery.trim()) return true;
+    const q = searchQuery.toLowerCase();
+    return (
+      inc.incidentNumber.toLowerCase().includes(q) ||
+      inc.title.toLowerCase().includes(q) ||
+      inc.severity.toLowerCase().includes(q)
+    );
+  });
+
+  const activeCount = items.filter(
+    (i) => i.status === "OPEN" || i.status === "INVESTIGATING",
+  ).length;
+  const highCritCount = items.filter(
+    (i) => i.severity === "HIGH" || i.severity === "CRITICAL",
+  ).length;
+
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Incidents</h1>
-          <p className="text-sm text-muted-foreground">
-            Triage, investigate, and resolve security incidents.
-          </p>
-        </div>
+      <PageHeader
+        title="Incidents"
+        description="Triage, investigate, run AI triage, and resolve security incidents."
+        breadcrumbs={[
+          { label: "Overview", to: "/dashboard" },
+          { label: "Incidents" },
+        ]}
+        actions={
+          <div className="flex flex-wrap items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() =>
+                downloadExportFile(
+                  "/api/v1/incidents/export?format=csv",
+                  "incidents-export.csv",
+                ).catch(() => toast.error("Export failed"))
+              }
+            >
+              <Download className="mr-1 h-4 w-4" />
+              CSV
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() =>
+                downloadExportFile(
+                  "/api/v1/incidents/export?format=json",
+                  "incidents-export.json",
+                ).catch(() => toast.error("Export failed"))
+              }
+            >
+              <Download className="mr-1 h-4 w-4" />
+              JSON
+            </Button>
+            <select
+              className="h-9 rounded-md border bg-background px-3 text-sm"
+              value={statusFilter}
+              onChange={(e) => {
+                setStatusFilter(e.target.value);
+                setPage(0);
+              }}
+            >
+              <option value="">All Statuses</option>
+              {STATUSES.map((s) => (
+                <option key={s} value={s}>
+                  {s}
+                </option>
+              ))}
+            </select>
 
-        <div className="flex flex-wrap items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() =>
-              downloadExportFile(
-                "/api/v1/incidents/export?format=csv",
-                "incidents-export.csv",
-              ).catch(() => toast.error("Export failed"))
-            }
-          >
-            <Download className="mr-1 h-4 w-4" />
-            CSV
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() =>
-              downloadExportFile(
-                "/api/v1/incidents/export?format=json",
-                "incidents-export.json",
-              ).catch(() => toast.error("Export failed"))
-            }
-          >
-            <Download className="mr-1 h-4 w-4" />
-            JSON
-          </Button>
-          <select
-            className="h-9 rounded-md border bg-background px-3 text-sm"
-            value={statusFilter}
-            onChange={(e) => {
-              setStatusFilter(e.target.value);
-              setPage(0);
-            }}
-          >
-            <option value="">All Statuses</option>
-            {STATUSES.map((s) => (
-              <option key={s} value={s}>
-                {s}
-              </option>
-            ))}
-          </select>
+            <Dialog open={createOpen} onOpenChange={setCreateOpen}>
+              <DialogTrigger render={<Button />}>
+                <Plus className="mr-2 h-4 w-4" />
+                New Incident
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Create Security Incident</DialogTitle>
+                </DialogHeader>
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    createMutation.mutate();
+                  }}
+                  className="space-y-4"
+                >
+                  <div className="space-y-1">
+                    <Label>Title</Label>
+                    <Input
+                      required
+                      value={newIncident.title}
+                      onChange={(e) =>
+                        setNewIncident((p) => ({ ...p, title: e.target.value }))
+                      }
+                      placeholder="Suspicious credential stuffing spike"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label>Severity</Label>
+                    <select
+                      className="flex h-9 w-full rounded-md border bg-background px-3 text-sm"
+                      value={newIncident.severity}
+                      onChange={(e) =>
+                        setNewIncident((p) => ({
+                          ...p,
+                          severity: e.target.value as IncidentSeverity,
+                        }))
+                      }
+                    >
+                      {SEVERITIES.map((s) => (
+                        <option key={s} value={s}>
+                          {s}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="space-y-1">
+                    <Label>Description</Label>
+                    <Input
+                      value={newIncident.description}
+                      onChange={(e) =>
+                        setNewIncident((p) => ({
+                          ...p,
+                          description: e.target.value,
+                        }))
+                      }
+                    />
+                  </div>
+                  <DialogFooter>
+                    <Button type="submit" disabled={createMutation.isPending}>
+                      {createMutation.isPending ? "Creating..." : "Create"}
+                    </Button>
+                  </DialogFooter>
+                </form>
+              </DialogContent>
+            </Dialog>
+          </div>
+        }
+      />
 
-          <Dialog open={createOpen} onOpenChange={setCreateOpen}>
-            <DialogTrigger render={<Button />}>
-              <Plus className="mr-2 h-4 w-4" />
-              New Incident
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Create Security Incident</DialogTitle>
-              </DialogHeader>
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  createMutation.mutate();
-                }}
-                className="space-y-4"
-              >
-                <div className="space-y-1">
-                  <Label>Title</Label>
-                  <Input
-                    required
-                    value={newIncident.title}
-                    onChange={(e) =>
-                      setNewIncident((p) => ({ ...p, title: e.target.value }))
-                    }
-                    placeholder="Suspicious credential stuffing spike"
-                  />
-                </div>
-                <div className="space-y-1">
-                  <Label>Severity</Label>
-                  <select
-                    className="flex h-9 w-full rounded-md border bg-background px-3 text-sm"
-                    value={newIncident.severity}
-                    onChange={(e) =>
-                      setNewIncident((p) => ({
-                        ...p,
-                        severity: e.target.value as IncidentSeverity,
-                      }))
-                    }
-                  >
-                    {SEVERITIES.map((s) => (
-                      <option key={s} value={s}>
-                        {s}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div className="space-y-1">
-                  <Label>Description</Label>
-                  <Input
-                    value={newIncident.description}
-                    onChange={(e) =>
-                      setNewIncident((p) => ({
-                        ...p,
-                        description: e.target.value,
-                      }))
-                    }
-                  />
-                </div>
-                <DialogFooter>
-                  <Button type="submit" disabled={createMutation.isPending}>
-                    {createMutation.isPending ? "Creating..." : "Create"}
-                  </Button>
-                </DialogFooter>
-              </form>
-            </DialogContent>
-          </Dialog>
-        </div>
+      <div className="grid gap-4 sm:grid-cols-3">
+        <StatCard
+          title="Total Incidents"
+          value={data?.totalElements ?? 0}
+          subtitle="Tracked across all statuses"
+          icon={<AlertTriangle className="h-4 w-4 text-amber-500" />}
+          loading={isLoading}
+          accentClassName="border-t-amber-500/70"
+        />
+        <StatCard
+          title="Active (Open / Investigating)"
+          value={activeCount}
+          subtitle="On current page"
+          icon={<Flame className="h-4 w-4 text-orange-500" />}
+          loading={isLoading}
+          accentClassName="border-t-orange-500/70"
+        />
+        <StatCard
+          title="High / Critical (Page)"
+          value={highCritCount}
+          subtitle="Elevated response priority"
+          icon={<ShieldAlert className="h-4 w-4 text-red-500" />}
+          loading={isLoading}
+          accentClassName="border-t-red-500/70"
+        />
       </div>
 
       <Card>
-        <CardHeader>
+        <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-3">
           <CardTitle className="text-base">Incident Queue</CardTitle>
+          <div className="relative">
+            <Search className="pointer-events-none absolute top-2.5 left-2.5 h-4 w-4 text-muted-foreground" />
+            <Input
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search number, title..."
+              className="h-9 w-56 pl-8 text-sm"
+            />
+          </div>
         </CardHeader>
         <CardContent>
           <Table>
@@ -290,12 +357,12 @@ export function IncidentsPage() {
             <TableBody>
               {isLoading ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center">
-                    Loading incidents...
+                  <TableCell colSpan={6}>
+                    <LoadingSpinner label="Loading incidents..." />
                   </TableCell>
                 </TableRow>
-              ) : data?.content.length ? (
-                data.content.map((inc) => (
+              ) : filteredIncidents.length ? (
+                filteredIncidents.map((inc) => (
                   <TableRow key={inc.id}>
                     <TableCell className="font-mono text-xs">
                       {inc.incidentNumber}
@@ -326,11 +393,11 @@ export function IncidentsPage() {
                 ))
               ) : (
                 <TableRow>
-                  <TableCell
-                    colSpan={6}
-                    className="text-center text-muted-foreground"
-                  >
-                    No incidents found.
+                  <TableCell colSpan={6}>
+                    <EmptyState
+                      title="No incidents found"
+                      description="Create an incident or adjust your status/search filters."
+                    />
                   </TableCell>
                 </TableRow>
               )}

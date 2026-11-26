@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Flame, Play } from "lucide-react";
+import { Play } from "lucide-react";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -14,6 +14,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { PageHeader } from "@/components/soc/PageHeader";
 import { api, getApiErrorMessage } from "@/lib/api";
 import type { AttackScenario, SimulationResponse } from "@/types/api";
 import { formatDateTime } from "@/utils/format";
@@ -73,16 +74,14 @@ export function AttackSimulatorPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="flex items-center gap-2 text-2xl font-bold tracking-tight">
-          <Flame className="h-6 w-6 text-orange-500" />
-          <span>Attack Simulator &amp; SOC Readiness Lab</span>
-        </h1>
-        <p className="text-sm text-muted-foreground">
-          Safely inject controlled attack telemetry to validate detection rules,
-          risk scoring, incidents, IP blocking, and live SSE alerts end-to-end.
-        </p>
-      </div>
+      <PageHeader
+        title="Attack Simulator & SOC Readiness Lab"
+        description="Safely inject controlled attack telemetry to validate detection rules, risk scoring, incidents, IP blocking, and live SSE alerts end-to-end."
+        breadcrumbs={[
+          { label: "Overview", to: "/dashboard" },
+          { label: "Attack Simulator" },
+        ]}
+      />
 
       {lastResult && (
         <Alert>

@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { CheckCircle2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
 import { z } from "zod";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button, buttonVariants } from "@/components/ui/button";
 import {
   Card,
@@ -48,11 +49,12 @@ export function ForgotPasswordPage() {
   };
 
   return (
-    <Card>
+    <Card className="border-border/70 bg-card/90 shadow-xl backdrop-blur">
       <CardHeader>
-        <CardTitle className="text-2xl">Forgot password</CardTitle>
+        <CardTitle className="text-2xl">Forgot Your Password?</CardTitle>
         <CardDescription>
-          Enter your account email to receive a password reset link.
+          Enter your registered email address and we&apos;ll help you regain
+          access to your account.
         </CardDescription>
       </CardHeader>
 
@@ -60,6 +62,8 @@ export function ForgotPasswordPage() {
         <>
           <CardContent>
             <Alert>
+              <CheckCircle2 className="h-4 w-4 text-emerald-400" />
+              <AlertTitle>Check your inbox</AlertTitle>
               <AlertDescription>
                 If an account exists for that email, a reset link has been sent
                 (valid for 30 minutes).
@@ -74,7 +78,7 @@ export function ForgotPasswordPage() {
                 className: "w-full",
               })}
             >
-              Back to Sign In
+              Back to Login
             </Link>
           </CardFooter>
         </>
@@ -82,7 +86,7 @@ export function ForgotPasswordPage() {
         <form onSubmit={handleSubmit(onSubmit)}>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">Registered Email</Label>
               <Input
                 id="email"
                 type="email"
@@ -104,7 +108,7 @@ export function ForgotPasswordPage() {
               to="/login"
               className="text-xs text-muted-foreground hover:underline"
             >
-              Back to Sign In
+              Back to Login
             </Link>
           </CardFooter>
         </form>

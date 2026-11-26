@@ -1,10 +1,10 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Eye, EyeOff } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { z } from "zod";
+import { PasswordInput } from "@/components/soc/PasswordInput";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
@@ -33,7 +33,7 @@ export function LoginPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const [submitting, setSubmitting] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(true);
   const [mfaRequired, setMfaRequired] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
 
@@ -71,15 +71,17 @@ export function LoginPage() {
   };
 
   return (
-    <Card>
+    <Card className="border-border/70 bg-card/90 shadow-xl backdrop-blur">
       <CardHeader>
         <CardTitle className="text-2xl">
-          {mfaRequired ? "Two-Factor Verification" : "Sign in"}
+          {mfaRequired
+            ? "Two-Factor Verification"
+            : "Welcome Back to CyberPulse"}
         </CardTitle>
         <CardDescription>
           {mfaRequired
             ? "Enter the 6-digit code from your authenticator app."
-            : "Enter your credentials to access the Security Operations Center."}
+            : "Sign in to your security operations workspace."}
         </CardDescription>
       </CardHeader>
 
@@ -113,38 +115,32 @@ export function LoginPage() {
                   <Label htmlFor="password">Password</Label>
                   <Link
                     to="/forgot-password"
-                    className="text-xs text-muted-foreground hover:underline"
+                    className="text-xs text-primary hover:underline"
                   >
                     Forgot password?
                   </Link>
                 </div>
-                <div className="relative">
-                  <Input
-                    id="password"
-                    type={showPassword ? "text" : "password"}
-                    autoComplete="current-password"
-                    className="pr-10"
-                    {...register("password")}
-                  />
-                  <button
-                    type="button"
-                    aria-label={showPassword ? "Hide password" : "Show password"}
-                    onClick={() => setShowPassword((prev) => !prev)}
-                    className="absolute inset-y-0 right-0 flex items-center px-3 text-muted-foreground hover:text-foreground"
-                  >
-                    {showPassword ? (
-                      <EyeOff className="h-4 w-4" />
-                    ) : (
-                      <Eye className="h-4 w-4" />
-                    )}
-                  </button>
-                </div>
+                <PasswordInput
+                  id="password"
+                  autoComplete="current-password"
+                  {...register("password")}
+                />
                 {errors.password && (
                   <p className="text-xs text-destructive">
                     {errors.password.message}
                   </p>
                 )}
               </div>
+
+              <label className="flex cursor-pointer items-center gap-2 text-xs text-muted-foreground">
+                <input
+                  type="checkbox"
+                  checked={rememberMe}
+                  onChange={(e) => setRememberMe(e.target.checked)}
+                  className="h-3.5 w-3.5 rounded border-border accent-primary"
+                />
+                <span>Remember me on this workstation</span>
+              </label>
             </>
           ) : (
             <div className="space-y-2">
@@ -187,7 +183,7 @@ export function LoginPage() {
                 to="/signup"
                 className="font-medium text-primary hover:underline"
               >
-                Create one
+                Create account
               </Link>
             </p>
           )}

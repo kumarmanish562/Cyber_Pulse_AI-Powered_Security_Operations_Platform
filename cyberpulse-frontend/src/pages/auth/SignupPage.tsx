@@ -1,10 +1,13 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Eye, EyeOff } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { z } from "zod";
+import {
+  PasswordInput,
+  PasswordStrengthBar,
+} from "@/components/soc/PasswordInput";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
@@ -27,12 +30,15 @@ const signupSchema = z
       .trim()
       .min(3, "Username must be at least 3 characters")
       .max(50, "Username must not exceed 50 characters"),
-    email: z.string().trim().email("Invalid email address"),
+    email: z.string().trim().email("Invalid work email address"),
     password: z
       .string()
       .min(8, "Password must be at least 8 characters")
       .max(100, "Password must not exceed 100 characters"),
     confirmPassword: z.string().min(1, "Please confirm your password"),
+    acceptTerms: z.boolean().refine((v) => v, {
+      message: "You must agree to the terms and security policy",
+    }),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: "Passwords do not match",
@@ -45,16 +51,19 @@ export function SignupPage() {
   const { register: registerUser } = useAuth();
   const navigate = useNavigate();
   const [submitting, setSubmitting] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
 
   const {
     register,
+    watch,
     handleSubmit,
     formState: { errors },
   } = useForm<SignupFormValues>({
     resolver: zodResolver(signupSchema),
+    defaultValues: { acceptTerms: true },
   });
+
+  const passwordValue = watch("password") ?? "";
 
   const onSubmit = async (values: SignupFormValues) => {
     setSubmitting(true);
@@ -77,11 +86,11 @@ export function SignupPage() {
   };
 
   return (
-    <Card>
+    <Card className="border-border/70 bg-card/90 shadow-xl backdrop-blur">
       <CardHeader>
-        <CardTitle className="text-2xl">Create account</CardTitle>
+        <CardTitle className="text-2xl">Build a More Secure Future.</CardTitle>
         <CardDescription>
-          Register for CyberPulse Security Operations Center access.
+          Create your CyberPulse Security Operations workspace account.
         </CardDescription>
       </CardHeader>
 
@@ -109,12 +118,12 @@ export function SignupPage() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="email">Work Email</Label>
             <Input
               id="email"
               type="email"
               autoComplete="email"
-              placeholder="analyst@cyberpulse.io"
+              placeholder="analyst@company.com"
               {...register("email")}
             />
             {errors.email && (
@@ -124,30 +133,12 @@ export function SignupPage() {
 
           <div className="space-y-2">
             <Label htmlFor="password">Password</Label>
-            <div className="relative">
-              <Input
-                id="password"
-                type={showPassword ? "text" : "password"}
-                autoComplete="new-password"
-                className="pr-10"
-                {...register("password")}
-              />
-              <button
-                type="button"
-                aria-label={showPassword ? "Hide password" : "Show password"}
-                onClick={() => setShowPassword((prev) => !prev)}
-                className="absolute inset-y-0 right-0 flex items-center px-3 text-muted-foreground hover:text-foreground"
-              >
-                {showPassword ? (
-                  <EyeOff className="h-4 w-4" />
-                ) : (
-                  <Eye className="h-4 w-4" />
-                )}
-              </button>
-            </div>
-            <p className="text-[11px] text-muted-foreground">
-              Minimum 8 characters.
-            </p>
+            <PasswordInput
+              id="password"
+              autoComplete="new-password"
+              {...register("password")}
+            />
+            <PasswordStrengthBar password={passwordValue} />
             {errors.password && (
               <p className="text-xs text-destructive">
                 {errors.password.message}
@@ -157,15 +148,32 @@ export function SignupPage() {
 
           <div className="space-y-2">
             <Label htmlFor="confirmPassword">Confirm Password</Label>
-            <Input
+            <PasswordInput
               id="confirmPassword"
-              type={showPassword ? "text" : "password"}
               autoComplete="new-password"
               {...register("confirmPassword")}
             />
             {errors.confirmPassword && (
               <p className="text-xs text-destructive">
                 {errors.confirmPassword.message}
+              </p>
+            )}
+          </div>
+
+          <div className="space-y-1">
+            <label className="flex cursor-pointer items-center gap-2 text-xs text-muted-foreground">
+              <input
+                type="checkbox"
+                className="h-3.5 w-3.5 rounded border-border accent-primary"
+                {...register("acceptTerms")}
+              />
+              <span>
+                I agree to the CyberPulse Terms of Use and Security Policy
+              </span>
+            </label>
+            {errors.acceptTerms && (
+              <p className="text-xs text-destructive">
+                {errors.acceptTerms.message}
               </p>
             )}
           </div>
@@ -177,8 +185,11 @@ export function SignupPage() {
           </Button>
           <p className="text-center text-sm text-muted-foreground">
             Already have an account?{" "}
-            <Link to="/login" className="font-medium text-primary hover:underline">
-              Sign in
+            <Link
+              to="/login"
+              className="font-medium text-primary hover:underline"
+            >
+              Sign In
             </Link>
           </p>
         </CardFooter>

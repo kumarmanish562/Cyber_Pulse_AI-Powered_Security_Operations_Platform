@@ -2,11 +2,16 @@ import { useQuery } from "@tanstack/react-query";
 import {
   Activity,
   AlertTriangle,
+  ArrowRight,
+  Brain,
   Clock,
+  Flame,
   Gauge,
   ShieldAlert,
 } from "lucide-react";
+import { Link } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Bar,
   BarChart,
@@ -23,7 +28,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
 import {
   Table,
   TableBody,
@@ -32,10 +36,12 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { PageHeader } from "@/components/soc/PageHeader";
 import {
   IncidentStatusBadge,
   SeverityBadge,
 } from "@/components/soc/SeverityBadge";
+import { StatCard } from "@/components/soc/StatCard";
 import { formatDateTime } from "@/utils/format";
 import { api } from "@/lib/api";
 import type {
@@ -106,41 +112,57 @@ export function DashboardPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">
-          CyberPulse Security Operations Center
-        </h1>
-        <p className="mt-1 text-muted-foreground">
-          Live overview of ingested events, threat detections, risk scores, and
-          active incidents.
-        </p>
-      </div>
+      <PageHeader
+        title="Security Operations Center"
+        description="Live overview of ingested events, threat detections, risk scores, and active incidents."
+        breadcrumbs={[{ label: "Overview" }]}
+        actions={
+          <div className="flex flex-wrap gap-2">
+            <Button variant="outline" size="sm" render={<Link to="/simulator" />}>
+              <Flame className="mr-1.5 h-3.5 w-3.5 text-orange-500" />
+              Attack Simulator
+            </Button>
+            <Button size="sm" render={<Link to="/incidents" />}>
+              <Brain className="mr-1.5 h-3.5 w-3.5" />
+              AI Incident Triage
+            </Button>
+          </div>
+        }
+      />
 
       {/* KPI Cards */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <KpiCard
+        <StatCard
           title="Security Events"
           value={eventsPage?.totalElements ?? 0}
-          icon={<Activity className="h-4 w-4 text-muted-foreground" />}
+          subtitle="Total telemetry ingested"
+          icon={<Activity className="h-4 w-4 text-blue-500" />}
           loading={isLoading}
+          accentClassName="border-t-blue-500/70"
         />
-        <KpiCard
+        <StatCard
           title="Threat Detections"
           value={detectionsPage?.totalElements ?? 0}
-          icon={<ShieldAlert className="h-4 w-4 text-muted-foreground" />}
+          subtitle="Rule-matched alerts"
+          icon={<ShieldAlert className="h-4 w-4 text-cyan-500" />}
           loading={isLoading}
+          accentClassName="border-t-cyan-500/70"
         />
-        <KpiCard
+        <StatCard
           title="Risk Assessments"
           value={riskPage?.totalElements ?? 0}
-          icon={<Gauge className="h-4 w-4 text-muted-foreground" />}
+          subtitle="Scored entities & events"
+          icon={<Gauge className="h-4 w-4 text-violet-500" />}
           loading={isLoading}
+          accentClassName="border-t-violet-500/70"
         />
-        <KpiCard
+        <StatCard
           title="Total Incidents"
           value={incidentsPage?.totalElements ?? 0}
-          icon={<AlertTriangle className="h-4 w-4 text-muted-foreground" />}
+          subtitle="Tracked response cases"
+          icon={<AlertTriangle className="h-4 w-4 text-amber-500" />}
           loading={isLoading}
+          accentClassName="border-t-amber-500/70"
         />
       </div>
 
@@ -319,36 +341,29 @@ export function DashboardPage() {
           </CardContent>
         </Card>
       </div>
+      {/* AI Security Insights Quick Card */}
+      <Card className="border-primary/25 bg-gradient-to-r from-primary/5 via-background to-cyan-500/5">
+        <CardContent className="flex flex-col justify-between gap-4 py-5 sm:flex-row sm:items-center">
+          <div className="flex items-start gap-3">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/15 text-primary">
+              <Brain className="h-5 w-5" />
+            </div>
+            <div>
+              <h3 className="text-sm font-semibold">
+                AI Security Intelligence &amp; Triage
+              </h3>
+              <p className="text-xs text-muted-foreground">
+                Inspect any incident to generate executive summaries, root-cause
+                hypotheses, and remediation playbooks with CyberPulse AI.
+              </p>
+            </div>
+          </div>
+          <Button variant="outline" size="sm" render={<Link to="/incidents" />}>
+            Open Incidents
+            <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
+          </Button>
+        </CardContent>
+      </Card>
     </div>
-  );
-}
-
-function KpiCard({
-  title,
-  value,
-  icon,
-  loading,
-}: {
-  title: string;
-  value: number;
-  icon: React.ReactNode;
-  loading: boolean;
-}) {
-  return (
-    <Card className="border-t-2 border-t-primary/60">
-      <CardHeader className="flex flex-row items-center justify-between pb-2">
-        <CardTitle className="text-sm font-medium text-muted-foreground">
-          {title}
-        </CardTitle>
-        {icon}
-      </CardHeader>
-      <CardContent>
-        {loading ? (
-          <Skeleton className="h-8 w-20" />
-        ) : (
-          <div className="text-3xl font-bold">{value}</div>
-        )}
-      </CardContent>
-    </Card>
   );
 }
