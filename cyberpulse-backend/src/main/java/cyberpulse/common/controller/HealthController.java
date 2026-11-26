@@ -1,10 +1,10 @@
 package cyberpulse.common.controller;
 
 import cyberpulse.common.response.ApiResponse;
-import cyberpulse.common.validation.TestRequest;
-import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/v1/health")
@@ -18,12 +18,5 @@ public class HealthController {
         );
 
         return ResponseEntity.ok(response);
-    }
-
-    @PostMapping
-    public ResponseEntity<TestRequest> test(
-            @Valid @RequestBody TestRequest request) {
-
-        return ResponseEntity.ok(request);
     }
 }

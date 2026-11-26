@@ -24,4 +24,11 @@ class HealthControllerTest {
         mockMvc.perform(get("/actuator/health"))
                 .andExpect(status().isOk());
     }
+
+    @Test
+    void apiHealthEndpointShouldReturn200() throws Exception {
+
+        mockMvc.perform(get("/api/v1/health"))
+                .andExpect(status().isOk());
+    }
 }

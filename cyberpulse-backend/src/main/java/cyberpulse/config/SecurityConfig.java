@@ -3,8 +3,11 @@ package cyberpulse.config;
 import cyberpulse.auth.security.JwtAuthenticationFilter;
 import cyberpulse.common.exception.RestAccessDeniedHandler;
 import cyberpulse.common.exception.RestAuthenticationEntryPoint;
+import cyberpulse.common.web.AuthRateLimitFilter;
 
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.beans.factory.annotation.Value;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -23,9 +26,14 @@ public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
+    private final AuthRateLimitFilter authRateLimitFilter;
+
     private final RestAuthenticationEntryPoint authenticationEntryPoint;
 
     private final RestAccessDeniedHandler accessDeniedHandler;
+
+    @Value("${cyberpulse.security.swagger-enabled:true}")
+    private boolean swaggerEnabled;
 
 
     @Bean
@@ -140,14 +148,16 @@ public class SecurityConfig {
 
                                 // -------------------------------------------------
                                 // SWAGGER / OPENAPI
-                                // Development / API documentation
+                                // Enabled in dev/local, blocked in prod
                                 // -------------------------------------------------
                                 .requestMatchers(
                                         "/swagger-ui/**",
                                         "/swagger-ui.html",
                                         "/v3/api-docs/**"
                                 )
-                                .permitAll()
+                                .access((authentication, context) ->
+                                        new org.springframework.security.authorization.AuthorizationDecision(swaggerEnabled)
+                                )
 
 
                                 // -------------------------------------------------
@@ -159,8 +169,12 @@ public class SecurityConfig {
 
 
                 // =====================================================
-                // JWT FILTER
+                // FILTERS (RATE LIMIT -> JWT)
                 // =====================================================
+                .addFilterBefore(
+                        authRateLimitFilter,
+                        UsernamePasswordAuthenticationFilter.class
+                )
                 .addFilterBefore(
                         jwtAuthenticationFilter,
                         UsernamePasswordAuthenticationFilter.class

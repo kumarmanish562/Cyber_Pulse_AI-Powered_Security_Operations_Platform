@@ -41,7 +41,7 @@ management:
 logging:
   level:
     root: INFO
-    com.cyberpulse: DEBUG
+    cyberpulse: DEBUG
   pattern:
     console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level [corr=%X{correlationId}] %logger{36} - %msg%n"
 
@@ -53,6 +53,13 @@ jwt:
 cyberpulse:
   cors:
     allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:5173}
+  security:
+    swagger-enabled: true
+  rate-limit:
+    enabled: true
+    auth:
+      max-requests: 20
+      window-seconds: 60
 
 
 
