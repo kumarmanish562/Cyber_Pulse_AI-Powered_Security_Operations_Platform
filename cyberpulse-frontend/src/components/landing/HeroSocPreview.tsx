@@ -8,7 +8,8 @@ const SAMPLE_ALERTS = [
     ip: "198.51.100.77",
     severity: "CRITICAL",
     time: "12s ago",
-    badgeClass: "border-red-500/40 bg-red-500/15 text-red-400",
+    dotClass: "bg-red-500",
+    badgeClass: "border-red-500/30 bg-red-500/10 text-red-500",
   },
   {
     id: "DET-8812",
@@ -16,7 +17,8 @@ const SAMPLE_ALERTS = [
     ip: "203.0.113.45",
     severity: "HIGH",
     time: "1m ago",
-    badgeClass: "border-orange-500/40 bg-orange-500/15 text-orange-400",
+    dotClass: "bg-orange-500",
+    badgeClass: "border-orange-500/30 bg-orange-500/10 text-orange-500",
   },
   {
     id: "DET-8809",
@@ -24,138 +26,158 @@ const SAMPLE_ALERTS = [
     ip: "185.220.101.4",
     severity: "MEDIUM",
     time: "4m ago",
-    badgeClass: "border-amber-500/40 bg-amber-500/15 text-amber-400",
+    dotClass: "bg-amber-500",
+    badgeClass: "border-amber-500/30 bg-amber-500/10 text-amber-500",
   },
 ];
 
-const NETWORK_BARS = [28, 42, 35, 64, 52, 88, 74, 96, 61, 48, 72, 84];
+const NETWORK_BARS = [32, 46, 38, 68, 54, 86, 72, 94, 62, 50, 74, 82];
 
 export function HeroSocPreview() {
   return (
-    <div className="relative rounded-xl border border-primary/25 bg-card/85 p-4 shadow-2xl shadow-primary/10 backdrop-blur-xl sm:p-5">
-      {/* Subtle top glow */}
-      <div className="pointer-events-none absolute -top-px right-12 left-12 h-px bg-gradient-to-r from-transparent via-cyan-400/70 to-transparent" />
-
-      {/* Window Chrome */}
-      <div className="flex items-center justify-between border-b border-border/60 pb-3">
+    <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-2xl shadow-black/10 dark:shadow-black/50">
+      {/* Minimal Window Chrome */}
+      <div className="flex items-center justify-between border-b border-border/70 bg-muted/30 px-4 py-3 sm:px-5">
         <div className="flex items-center gap-2">
-          <span className="h-2.5 w-2.5 rounded-full bg-red-500/70" />
-          <span className="h-2.5 w-2.5 rounded-full bg-amber-500/70" />
-          <span className="h-2.5 w-2.5 rounded-full bg-emerald-500/70" />
+          <span className="h-2.5 w-2.5 rounded-full bg-border" />
+          <span className="h-2.5 w-2.5 rounded-full bg-border" />
+          <span className="h-2.5 w-2.5 rounded-full bg-border" />
           <span className="ml-2 font-mono text-[11px] text-muted-foreground">
-            cyberpulse-soc // live-telemetry
+            cyberpulse.app / soc-overview
           </span>
         </div>
-        <div className="flex items-center gap-2">
-          <Badge
-            variant="outline"
-            className="border-emerald-500/40 bg-emerald-500/10 font-mono text-[10px] text-emerald-400"
-          >
-            <span className="mr-1.5 inline-block h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400" />
-            LIVE DEMO
-          </Badge>
-        </div>
+        <Badge
+          variant="outline"
+          className="rounded-full border-emerald-500/30 bg-emerald-500/10 px-2.5 py-0.5 font-mono text-[10px] text-emerald-500"
+        >
+          <span className="mr-1.5 inline-block h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-500" />
+          LIVE DEMO
+        </Badge>
       </div>
 
-      {/* Top Mini KPIs */}
-      <div className="mt-4 grid grid-cols-3 gap-2.5">
-        <div className="rounded-lg border border-border/60 bg-background/60 p-2.5">
-          <div className="flex items-center justify-between text-[11px] text-muted-foreground">
-            <span>Active Incidents</span>
-            <AlertTriangle className="h-3.5 w-3.5 text-red-400" />
-          </div>
-          <div className="mt-1 text-lg font-bold tracking-tight">03</div>
-          <div className="text-[10px] text-red-400">1 Critical SLA</div>
-        </div>
-
-        <div className="rounded-lg border border-border/60 bg-background/60 p-2.5">
-          <div className="flex items-center justify-between text-[11px] text-muted-foreground">
-            <span>Risk Score</span>
-            <ShieldAlert className="h-3.5 w-3.5 text-amber-400" />
-          </div>
-          <div className="mt-1 text-lg font-bold tracking-tight">84/100</div>
-          <div className="text-[10px] text-amber-400">Elevated posture</div>
-        </div>
-
-        <div className="rounded-lg border border-border/60 bg-background/60 p-2.5">
-          <div className="flex items-center justify-between text-[11px] text-muted-foreground">
-            <span>Events / min</span>
-            <Activity className="h-3.5 w-3.5 text-cyan-400" />
-          </div>
-          <div className="mt-1 text-lg font-bold tracking-tight">1,420</div>
-          <div className="text-[10px] text-cyan-400">99.8% parsed</div>
-        </div>
-      </div>
-
-      {/* Threat & Network Activity Visualization */}
-      <div className="mt-3 rounded-lg border border-border/60 bg-background/60 p-3">
-        <div className="mb-2 flex items-center justify-between text-xs">
-          <span className="font-medium">Network &amp; Threat Activity</span>
-          <span className="font-mono text-[10px] text-muted-foreground">
-            Last 12 intervals
-          </span>
-        </div>
-
-        <div className="flex h-20 items-end gap-1.5">
-          {NETWORK_BARS.map((height, idx) => (
-            <div
-              key={idx}
-              className="group relative flex-1 rounded-t bg-gradient-to-t from-primary/40 via-cyan-400/70 to-violet-400/90 transition-all duration-300 hover:brightness-125"
-              style={{ height: `${height}%` }}
-            />
-          ))}
-        </div>
-      </div>
-
-      {/* Recent Security Alerts */}
-      <div className="mt-3 space-y-1.5">
-        <div className="flex items-center justify-between text-xs">
-          <span className="font-medium">Security Events Timeline</span>
-          <span className="font-mono text-[10px] text-cyan-400">
-            SSE Stream Connected
-          </span>
-        </div>
-
-        {SAMPLE_ALERTS.map((alert) => (
-          <div
-            key={alert.id}
-            className="flex items-center justify-between rounded-lg border border-border/50 bg-background/50 px-3 py-2 text-xs transition-colors hover:border-primary/40"
-          >
-            <div className="min-w-0">
-              <div className="truncate font-medium">
-                <span className="mr-1.5 font-mono text-[11px] text-muted-foreground">
-                  {alert.id}
-                </span>
-                {alert.title}
-              </div>
-              <div className="font-mono text-[10px] text-muted-foreground">
-                src={alert.ip} · {alert.time}
-              </div>
+      <div className="p-4 sm:p-6">
+        {/* Top KPI Strip */}
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+          <div className="rounded-xl border border-border/70 bg-background/70 p-3.5">
+            <div className="flex items-center justify-between text-xs text-muted-foreground">
+              <span>Active Incidents</span>
+              <AlertTriangle className="h-3.5 w-3.5 text-red-500" />
             </div>
-            <Badge variant="outline" className={alert.badgeClass}>
-              {alert.severity}
-            </Badge>
+            <div className="mt-1.5 flex items-baseline gap-2">
+              <span className="text-2xl font-semibold tracking-tight">03</span>
+              <span className="text-[11px] text-muted-foreground">
+                1 Critical SLA
+              </span>
+            </div>
           </div>
-        ))}
-      </div>
 
-      {/* AI Threat Analysis Panel */}
-      <div className="mt-3 rounded-lg border border-violet-500/30 bg-violet-500/10 p-3 text-xs">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-1.5 font-semibold text-violet-300">
-            <BrainCircuit className="h-3.5 w-3.5" />
-            <span>AI Threat Triage</span>
+          <div className="rounded-xl border border-border/70 bg-background/70 p-3.5">
+            <div className="flex items-center justify-between text-xs text-muted-foreground">
+              <span>Risk Score</span>
+              <ShieldAlert className="h-3.5 w-3.5 text-amber-500" />
+            </div>
+            <div className="mt-1.5 flex items-baseline gap-2">
+              <span className="text-2xl font-semibold tracking-tight">
+                84/100
+              </span>
+              <span className="text-[11px] text-muted-foreground">
+                Elevated posture
+              </span>
+            </div>
           </div>
-          <span className="font-mono text-[10px] text-violet-300/80">
-            Confidence 96%
-          </span>
+
+          <div className="rounded-xl border border-border/70 bg-background/70 p-3.5">
+            <div className="flex items-center justify-between text-xs text-muted-foreground">
+              <span>Events / min</span>
+              <Activity className="h-3.5 w-3.5 text-foreground/70" />
+            </div>
+            <div className="mt-1.5 flex items-baseline gap-2">
+              <span className="text-2xl font-semibold tracking-tight">
+                1,420
+              </span>
+              <span className="text-[11px] text-muted-foreground">
+                99.8% parsed
+              </span>
+            </div>
+          </div>
         </div>
-        <p className="mt-1.5 leading-relaxed text-muted-foreground">
-          Coordinated SSH credential-stuffing burst from{" "}
-          <code className="font-mono text-foreground">198.51.100.77</code>{" "}
-          mapped to <span className="text-foreground">MITRE T1110</span>.
-          Recommended: auto-block IP &amp; revoke active sessions.
-        </p>
+
+        {/* Chart + Timeline Split */}
+        <div className="mt-4 grid gap-4 lg:grid-cols-12">
+          <div className="rounded-xl border border-border/70 bg-background/70 p-4 lg:col-span-5">
+            <div className="mb-3 flex items-center justify-between text-xs">
+              <span className="font-medium">Network &amp; Threat Activity</span>
+              <span className="font-mono text-[10px] text-muted-foreground">
+                12 intervals
+              </span>
+            </div>
+
+            <div className="flex h-28 items-end gap-1.5">
+              {NETWORK_BARS.map((height, idx) => (
+                <div
+                  key={idx}
+                  className="flex-1 rounded-t-sm bg-foreground/20 transition-colors hover:bg-foreground/60"
+                  style={{ height: `${height}%` }}
+                />
+              ))}
+            </div>
+
+            <div className="mt-4 rounded-lg border border-border/70 bg-muted/30 p-3 text-xs">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-1.5 font-medium">
+                  <BrainCircuit className="h-3.5 w-3.5 text-foreground" />
+                  <span>AI Threat Triage</span>
+                </div>
+                <span className="font-mono text-[10px] text-muted-foreground">
+                  96% conf
+                </span>
+              </div>
+              <p className="mt-1.5 leading-relaxed text-muted-foreground">
+                SSH credential-stuffing burst from{" "}
+                <code className="font-mono text-foreground">198.51.100.77</code>{" "}
+                (MITRE T1110). Recommended: auto-block IP &amp; revoke sessions.
+              </p>
+            </div>
+          </div>
+
+          <div className="rounded-xl border border-border/70 bg-background/70 p-4 lg:col-span-7">
+            <div className="mb-3 flex items-center justify-between text-xs">
+              <span className="font-medium">Security Events Timeline</span>
+              <span className="font-mono text-[10px] text-muted-foreground">
+                SSE Stream Connected
+              </span>
+            </div>
+
+            <div className="divide-y divide-border/60">
+              {SAMPLE_ALERTS.map((alert) => (
+                <div
+                  key={alert.id}
+                  className="flex items-center justify-between gap-3 py-3 first:pt-1 last:pb-1"
+                >
+                  <div className="flex min-w-0 items-center gap-3">
+                    <span
+                      className={`h-2 w-2 shrink-0 rounded-full ${alert.dotClass}`}
+                    />
+                    <div className="min-w-0">
+                      <div className="truncate text-xs font-medium">
+                        <span className="mr-1.5 font-mono text-[11px] text-muted-foreground">
+                          {alert.id}
+                        </span>
+                        {alert.title}
+                      </div>
+                      <div className="font-mono text-[10px] text-muted-foreground">
+                        src={alert.ip} · {alert.time}
+                      </div>
+                    </div>
+                  </div>
+                  <Badge variant="outline" className={alert.badgeClass}>
+                    {alert.severity}
+                  </Badge>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );

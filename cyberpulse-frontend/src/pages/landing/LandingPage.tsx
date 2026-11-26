@@ -9,7 +9,6 @@ import {
   Radar,
   ShieldAlert,
   ShieldCheck,
-  Sparkles,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { AiIntelligencePreview } from "@/components/landing/AiIntelligencePreview";
@@ -25,28 +24,24 @@ const DEMO_METRICS = [
     value: "1,284",
     delta: "+14% vs last 24h",
     icon: ShieldAlert,
-    accent: "text-red-400",
   },
   {
     label: "Active Incidents",
     value: "07",
     delta: "2 High / 1 Critical",
     icon: AlertTriangle,
-    accent: "text-orange-400",
   },
   {
     label: "Risk Score",
     value: "84 / 100",
     delta: "Dynamic weighted model",
     icon: Gauge,
-    accent: "text-amber-400",
   },
   {
     label: "Events Analyzed",
     value: "4.2M",
     delta: "Async pipeline active",
     icon: Activity,
-    accent: "text-cyan-400",
   },
 ];
 
@@ -133,114 +128,109 @@ const AI_CAPABILITIES = [
 
 export function LandingPage() {
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="min-h-screen bg-background text-foreground antialiased">
       <LandingNavbar />
 
       <main>
-        {/* Hero Section */}
-        <section className="relative overflow-hidden border-b border-border/60">
-          {/* Atmospheric SOC background */}
-          <div className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_top_right,rgba(56,189,248,0.14),transparent_45%),radial-gradient(ellipse_at_bottom_left,rgba(139,92,246,0.12),transparent_45%)]" />
-          <div className="pointer-events-none absolute inset-0 -z-10 bg-[linear-gradient(to_right,rgba(148,163,184,0.05)_1px,transparent_1px),linear-gradient(to_bottom,rgba(148,163,184,0.05)_1px,transparent_1px)] bg-[size:48px_48px]" />
-
-          <div className="mx-auto grid w-full max-w-7xl items-center gap-12 px-4 py-16 sm:px-6 lg:grid-cols-12 lg:px-8 lg:py-24">
-            {/* Left Column */}
-            <div className="animate-in fade-in slide-in-from-bottom-4 duration-700 lg:col-span-6">
-              <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-3.5 py-1.5 text-xs font-semibold tracking-wider text-primary uppercase">
-                <Sparkles className="h-3.5 w-3.5" />
+        {/* Editorial Hero Section */}
+        <section className="border-b border-border/60 pt-16 pb-20 sm:pt-24 sm:pb-28">
+          <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8">
+            <div className="mx-auto max-w-3xl text-center">
+              <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-border bg-muted/40 px-3.5 py-1 text-xs font-medium text-muted-foreground">
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
                 AI-Powered Security Operations Center
               </div>
 
-              <h1 className="text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl">
+              <h1 className="text-4xl font-semibold tracking-[-0.035em] sm:text-6xl lg:text-[64px] lg:leading-[1.06]">
                 See Every Threat.
-                <span className="mt-1 block bg-gradient-to-r from-cyan-400 via-blue-400 to-violet-400 bg-clip-text text-transparent">
+                <span className="mt-1 block text-muted-foreground">
                   Stop It Before It Spreads.
                 </span>
               </h1>
 
-              <p className="mt-6 max-w-xl text-base leading-relaxed text-muted-foreground sm:text-lg">
+              <p className="mx-auto mt-6 max-w-2xl text-base leading-relaxed text-muted-foreground sm:text-lg">
                 Intelligent Security. Faster Response. Stronger Defense.
                 CyberPulse unifies security event monitoring, AI-assisted
                 threat triage, risk scoring, and automated incident containment
-                in one modern SOC platform.
+                in one disciplined SOC workspace.
               </p>
 
-              <div className="mt-8 flex flex-wrap gap-3.5">
+              <div className="mt-9 flex flex-wrap items-center justify-center gap-3">
                 <Link
                   to="/signup"
                   className={cn(
                     buttonVariants({ size: "lg" }),
-                    "gap-2 shadow-lg shadow-primary/20",
+                    "h-11 rounded-full bg-foreground px-7 text-sm font-medium text-background hover:bg-foreground/90",
                   )}
                 >
                   Explore Platform
-                  <ArrowRight className="h-4 w-4" />
+                  <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
 
                 <Link
                   to="/login"
-                  className={buttonVariants({
-                    size: "lg",
-                    variant: "outline",
-                  })}
+                  className={cn(
+                    buttonVariants({ size: "lg", variant: "outline" }),
+                    "h-11 rounded-full px-7 text-sm font-medium",
+                  )}
                 >
                   Sign In
                 </Link>
               </div>
 
-              <div className="mt-8 flex flex-wrap gap-x-6 gap-y-2.5 text-xs font-medium text-muted-foreground sm:text-sm">
+              <div className="mt-8 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs text-muted-foreground">
                 <span className="flex items-center gap-1.5">
-                  <CheckCircle2 className="h-4 w-4 text-cyan-400" />
+                  <CheckCircle2 className="h-3.5 w-3.5 text-foreground/70" />
                   Real-time threat intelligence
                 </span>
                 <span className="flex items-center gap-1.5">
-                  <CheckCircle2 className="h-4 w-4 text-violet-400" />
+                  <CheckCircle2 className="h-3.5 w-3.5 text-foreground/70" />
                   AI-powered security analysis
                 </span>
                 <span className="flex items-center gap-1.5">
-                  <CheckCircle2 className="h-4 w-4 text-emerald-400" />
+                  <CheckCircle2 className="h-3.5 w-3.5 text-foreground/70" />
                   Enterprise-grade security
                 </span>
               </div>
             </div>
 
-            {/* Right Column: Live SOC Preview */}
-            <div className="animate-in fade-in slide-in-from-bottom-6 duration-700 lg:col-span-6">
+            {/* Product Showcase Frame */}
+            <div className="mt-14 sm:mt-16">
               <HeroSocPreview />
             </div>
           </div>
         </section>
 
-        {/* Security Metrics Section (Illustrative Demo Data) */}
-        <section
-          id="metrics"
-          className="border-b border-border/60 bg-muted/20 py-14"
-        >
-          <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
+        {/* Security Metrics Strip (Hairline Bento Grid) */}
+        <section id="metrics" className="border-b border-border/60 py-16">
+          <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8">
             <div className="mb-6 flex flex-wrap items-center justify-between gap-2">
-              <p className="text-xs font-semibold tracking-wider text-muted-foreground uppercase">
+              <p className="text-xs font-medium tracking-wider text-muted-foreground uppercase">
                 SOC Telemetry Snapshot
               </p>
-              <Badge variant="outline" className="font-mono text-[10px]">
+              <Badge
+                variant="outline"
+                className="rounded-full font-mono text-[10px] text-muted-foreground"
+              >
                 Illustrative Demo Metrics
               </Badge>
             </div>
 
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="grid divide-y divide-border overflow-hidden rounded-2xl border border-border bg-card/40 sm:grid-cols-2 sm:divide-x lg:grid-cols-4 lg:divide-y-0">
               {DEMO_METRICS.map((metric) => {
                 const Icon = metric.icon;
                 return (
                   <div
                     key={metric.label}
-                    className="group rounded-xl border border-border/70 bg-card/70 p-5 transition-all hover:-translate-y-0.5 hover:border-primary/40"
+                    className="p-6 transition-colors hover:bg-muted/30"
                   >
                     <div className="flex items-center justify-between">
                       <span className="text-xs font-medium text-muted-foreground">
                         {metric.label}
                       </span>
-                      <Icon className={cn("h-4 w-4", metric.accent)} />
+                      <Icon className="h-4 w-4 text-muted-foreground" />
                     </div>
-                    <div className="mt-3 text-3xl font-bold tracking-tight">
+                    <div className="mt-3 text-3xl font-semibold tracking-tight">
                       {metric.value}
                     </div>
                     <div className="mt-1 text-xs text-muted-foreground">
@@ -253,50 +243,49 @@ export function LandingPage() {
           </div>
         </section>
 
-        {/* Platform Features Section */}
-        <section id="features" className="border-b border-border/60 py-20">
-          <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
+        {/* Platform Features Gallery */}
+        <section id="features" className="border-b border-border/60 py-24">
+          <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8">
             <div className="max-w-2xl">
-              <p className="text-xs font-semibold tracking-wider text-primary uppercase">
+              <p className="text-xs font-medium tracking-wider text-muted-foreground uppercase">
                 Platform Capabilities
               </p>
-              <h2 className="mt-2 text-3xl font-bold tracking-tight sm:text-4xl">
+              <h2 className="mt-2.5 text-3xl font-semibold tracking-[-0.03em] sm:text-4xl">
                 Everything Your Security Team Needs.
               </h2>
-              <p className="mt-3 text-muted-foreground">
+              <p className="mt-3 text-base text-muted-foreground">
                 Purpose-built modules for high-throughput event ingestion,
                 detection engineering, risk scoring, and coordinated response.
               </p>
             </div>
 
-            <div className="mt-12 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+            <div className="mt-12 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
               {PLATFORM_FEATURES.map((feature) => {
                 const Icon = feature.icon;
                 return (
                   <div
                     key={feature.title}
-                    className="group relative flex flex-col justify-between rounded-xl border border-border/70 bg-card/70 p-6 transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/50 hover:shadow-lg hover:shadow-primary/5"
+                    className="group flex flex-col justify-between rounded-2xl border border-border/80 bg-card/40 p-6 transition-all duration-200 hover:border-foreground/25 hover:bg-card"
                   >
                     <div>
                       <div className="flex items-center justify-between">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-lg border border-primary/30 bg-primary/10 text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
-                          <Icon className="h-5 w-5" />
+                        <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-border bg-background text-foreground transition-colors group-hover:bg-foreground group-hover:text-background">
+                          <Icon className="h-4.5 w-4.5" />
                         </div>
                         <Badge
                           variant="secondary"
-                          className="font-mono text-[10px]"
+                          className="rounded-full font-mono text-[10px]"
                         >
                           {feature.tag}
                         </Badge>
                       </div>
-                      <h3 className="mt-5 text-lg font-semibold tracking-tight">
+                      <h3 className="mt-5 text-base font-semibold tracking-tight">
                         {feature.title}
                       </h3>
                       <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
                         {feature.description}
                       </p>
                     </div>
-                    <div className="mt-5 h-px w-full bg-gradient-to-r from-primary/40 via-cyan-400/20 to-transparent opacity-60 transition-opacity group-hover:opacity-100" />
                   </div>
                 );
               })}
@@ -304,36 +293,33 @@ export function LandingPage() {
           </div>
         </section>
 
-        {/* How It Works Section */}
+        {/* How It Works Pipeline */}
         <section
           id="workflow"
-          className="border-b border-border/60 bg-muted/20 py-20"
+          className="border-b border-border/60 bg-muted/20 py-24"
         >
-          <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8">
             <div className="max-w-2xl">
-              <p className="text-xs font-semibold tracking-wider text-primary uppercase">
+              <p className="text-xs font-medium tracking-wider text-muted-foreground uppercase">
                 End-to-End SOC Pipeline
               </p>
-              <h2 className="mt-2 text-3xl font-bold tracking-tight sm:text-4xl">
+              <h2 className="mt-2.5 text-3xl font-semibold tracking-[-0.03em] sm:text-4xl">
                 From Raw Telemetry to Automated Containment.
               </h2>
             </div>
 
-            <div className="mt-12 grid gap-4 md:grid-cols-5">
-              {WORKFLOW_STEPS.map((item, idx) => (
+            <div className="mt-12 grid divide-y divide-border overflow-hidden rounded-2xl border border-border bg-card md:grid-cols-5 md:divide-x md:divide-y-0">
+              {WORKFLOW_STEPS.map((item) => (
                 <div
                   key={item.step}
-                  className="relative rounded-xl border border-border/70 bg-card/75 p-5"
+                  className="p-6 transition-colors hover:bg-muted/30"
                 >
-                  <div className="flex items-center justify-between">
-                    <span className="font-mono text-xs font-bold text-cyan-400">
-                      {item.step}
-                    </span>
-                    {idx < WORKFLOW_STEPS.length - 1 && (
-                      <ArrowRight className="hidden h-3.5 w-3.5 text-muted-foreground md:block" />
-                    )}
-                  </div>
-                  <h3 className="mt-3 text-sm font-semibold">{item.title}</h3>
+                  <span className="font-mono text-xs font-medium text-muted-foreground">
+                    {item.step}
+                  </span>
+                  <h3 className="mt-3 text-sm font-semibold tracking-tight">
+                    {item.title}
+                  </h3>
                   <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
                     {item.detail}
                   </p>
@@ -346,18 +332,18 @@ export function LandingPage() {
         {/* AI Intelligence Section */}
         <section
           id="ai-intelligence"
-          className="border-b border-border/60 py-20"
+          className="border-b border-border/60 py-24"
         >
-          <div className="mx-auto grid w-full max-w-7xl items-center gap-10 px-4 sm:px-6 lg:grid-cols-12 lg:px-8">
+          <div className="mx-auto grid w-full max-w-6xl items-center gap-12 px-4 sm:px-6 lg:grid-cols-12 lg:px-8">
             <div className="lg:col-span-5">
-              <div className="inline-flex items-center gap-2 rounded-full border border-violet-500/30 bg-violet-500/10 px-3 py-1 text-xs font-semibold text-violet-400">
-                <BrainCircuit className="h-3.5 w-3.5" />
+              <div className="inline-flex items-center gap-2 rounded-full border border-border bg-muted/40 px-3 py-1 text-xs font-medium text-muted-foreground">
+                <BrainCircuit className="h-3.5 w-3.5 text-foreground" />
                 CyberPulse AI Engine
               </div>
-              <h2 className="mt-4 text-3xl font-bold tracking-tight sm:text-4xl">
+              <h2 className="mt-4 text-3xl font-semibold tracking-[-0.03em] sm:text-4xl">
                 Security Intelligence, Powered by AI.
               </h2>
-              <p className="mt-4 text-muted-foreground">
+              <p className="mt-4 text-base leading-relaxed text-muted-foreground">
                 Turn noisy security alerts into clear, actionable investigation
                 briefs using local Ollama or cloud LLM triage with deterministic
                 playbook fallback.
@@ -366,7 +352,7 @@ export function LandingPage() {
               <ul className="mt-6 space-y-3 text-sm">
                 {AI_CAPABILITIES.map((cap) => (
                   <li key={cap} className="flex items-center gap-2.5">
-                    <CheckCircle2 className="h-4 w-4 shrink-0 text-violet-400" />
+                    <CheckCircle2 className="h-4 w-4 shrink-0 text-foreground/75" />
                     <span>{cap}</span>
                   </li>
                 ))}
@@ -380,24 +366,32 @@ export function LandingPage() {
         </section>
 
         {/* Final CTA Section */}
-        <section className="relative overflow-hidden border-b border-border/60 py-20">
-          <div className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(circle_at_center,rgba(59,130,246,0.18),transparent_60%)]" />
-          <div className="mx-auto max-w-4xl px-4 text-center sm:px-6 lg:px-8">
-            <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
+        <section className="border-b border-border/60 py-24">
+          <div className="mx-auto max-w-3xl px-4 text-center sm:px-6 lg:px-8">
+            <h2 className="text-3xl font-semibold tracking-[-0.03em] sm:text-5xl">
               Your Next Security Incident Shouldn&apos;t Be a Surprise.
             </h2>
-            <p className="mx-auto mt-4 max-w-2xl text-muted-foreground">
+            <p className="mx-auto mt-4 max-w-xl text-base text-muted-foreground">
               Bring threat detection, investigation, and incident response into
               one intelligent security platform.
             </p>
-            <div className="mt-8 flex flex-wrap justify-center gap-4">
-              <Link to="/signup" className={buttonVariants({ size: "lg" })}>
+            <div className="mt-8 flex flex-wrap justify-center gap-3">
+              <Link
+                to="/signup"
+                className={cn(
+                  buttonVariants({ size: "lg" }),
+                  "h-11 rounded-full bg-foreground px-7 text-sm font-medium text-background hover:bg-foreground/90",
+                )}
+              >
                 Get Started
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Link>
               <Link
                 to="/login"
-                className={buttonVariants({ size: "lg", variant: "outline" })}
+                className={cn(
+                  buttonVariants({ size: "lg", variant: "outline" }),
+                  "h-11 rounded-full px-7 text-sm font-medium",
+                )}
               >
                 Sign In
               </Link>
@@ -406,13 +400,15 @@ export function LandingPage() {
         </section>
       </main>
 
-      {/* Enterprise Footer */}
-      <footer className="bg-muted/20 py-12">
-        <div className="mx-auto grid w-full max-w-7xl gap-8 px-4 sm:grid-cols-2 sm:px-6 lg:grid-cols-4 lg:px-8">
+      {/* Minimal Enterprise Footer */}
+      <footer className="py-14">
+        <div className="mx-auto grid w-full max-w-6xl gap-8 px-4 sm:grid-cols-2 sm:px-6 lg:grid-cols-4 lg:px-8">
           <div>
             <div className="flex items-center gap-2">
-              <ShieldCheck className="h-5 w-5 text-primary" />
-              <span className="font-bold">CyberPulse</span>
+              <div className="flex h-6 w-6 items-center justify-center rounded-md bg-foreground text-background">
+                <ShieldCheck className="h-3.5 w-3.5" />
+              </div>
+              <span className="text-sm font-semibold">CyberPulse</span>
             </div>
             <p className="mt-3 text-xs leading-relaxed text-muted-foreground">
               AI-powered Security Operations Center platform for threat
@@ -421,7 +417,7 @@ export function LandingPage() {
           </div>
 
           <div>
-            <h4 className="text-xs font-semibold uppercase tracking-wider">
+            <h4 className="text-xs font-semibold tracking-wider text-foreground uppercase">
               Platform
             </h4>
             <ul className="mt-3 space-y-2 text-xs text-muted-foreground">
@@ -449,7 +445,7 @@ export function LandingPage() {
           </div>
 
           <div>
-            <h4 className="text-xs font-semibold uppercase tracking-wider">
+            <h4 className="text-xs font-semibold tracking-wider text-foreground uppercase">
               Security &amp; Access
             </h4>
             <ul className="mt-3 space-y-2 text-xs text-muted-foreground">
@@ -472,7 +468,7 @@ export function LandingPage() {
           </div>
 
           <div>
-            <h4 className="text-xs font-semibold uppercase tracking-wider">
+            <h4 className="text-xs font-semibold tracking-wider text-foreground uppercase">
               Documentation &amp; Contact
             </h4>
             <ul className="mt-3 space-y-2 text-xs text-muted-foreground">
@@ -483,7 +479,7 @@ export function LandingPage() {
           </div>
         </div>
 
-        <div className="mx-auto mt-10 flex w-full max-w-7xl flex-wrap items-center justify-between gap-4 border-t border-border/60 px-4 pt-6 text-xs text-muted-foreground sm:px-6 lg:px-8">
+        <div className="mx-auto mt-12 flex w-full max-w-6xl flex-wrap items-center justify-between gap-4 border-t border-border/60 px-4 pt-6 text-xs text-muted-foreground sm:px-6 lg:px-8">
           <span>© {new Date().getFullYear()} CyberPulse SOC Platform.</span>
           <span>Intelligent Security. Faster Response. Stronger Defense.</span>
         </div>

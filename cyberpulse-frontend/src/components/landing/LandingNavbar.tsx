@@ -16,13 +16,15 @@ export function LandingNavbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
-    <header className="sticky top-0 z-50 border-b border-border/60 bg-background/80 backdrop-blur-xl">
-      <div className="mx-auto flex h-16 w-full max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+    <header className="sticky top-0 z-50 border-b border-border/60 bg-background/85 backdrop-blur-xl">
+      <div className="mx-auto flex h-14 w-full max-w-6xl items-center justify-between px-4 sm:px-6 lg:px-8">
         <Link to="/" className="flex items-center gap-2.5">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-primary/40 bg-primary/15 text-primary">
+          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-foreground text-background">
             <ShieldCheck className="h-4 w-4" />
           </div>
-          <span className="text-base font-bold tracking-tight">CyberPulse</span>
+          <span className="text-[15px] font-semibold tracking-tight">
+            CyberPulse
+          </span>
         </Link>
 
         <nav className="hidden items-center gap-7 md:flex">
@@ -30,22 +32,31 @@ export function LandingNavbar() {
             <a
               key={item.href}
               href={item.href}
-              className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+              className="text-[13px] font-medium text-muted-foreground transition-colors hover:text-foreground"
             >
               {item.label}
             </a>
           ))}
         </nav>
 
-        <div className="hidden items-center gap-2.5 md:flex">
+        <div className="hidden items-center gap-2 md:flex">
           <ThemeToggle />
           <Link
             to="/login"
-            className={buttonVariants({ variant: "ghost", size: "sm" })}
+            className={cn(
+              buttonVariants({ variant: "ghost", size: "sm" }),
+              "rounded-full px-4 text-[13px]",
+            )}
           >
             Sign In
           </Link>
-          <Link to="/signup" className={buttonVariants({ size: "sm" })}>
+          <Link
+            to="/signup"
+            className={cn(
+              buttonVariants({ size: "sm" }),
+              "rounded-full bg-foreground px-4 text-[13px] text-background hover:bg-foreground/90",
+            )}
+          >
             Get Started
           </Link>
         </div>
@@ -58,6 +69,7 @@ export function LandingNavbar() {
             onClick={() => setMobileOpen((prev) => !prev)}
             className={cn(
               buttonVariants({ variant: "outline", size: "icon" }),
+              "h-8 w-8 rounded-full",
             )}
           >
             {mobileOpen ? (
@@ -87,14 +99,17 @@ export function LandingNavbar() {
                 to="/login"
                 className={cn(
                   buttonVariants({ variant: "outline", size: "sm" }),
-                  "flex-1",
+                  "flex-1 rounded-full",
                 )}
               >
                 Sign In
               </Link>
               <Link
                 to="/signup"
-                className={cn(buttonVariants({ size: "sm" }), "flex-1")}
+                className={cn(
+                  buttonVariants({ size: "sm" }),
+                  "flex-1 rounded-full bg-foreground text-background hover:bg-foreground/90",
+                )}
               >
                 Get Started
               </Link>
