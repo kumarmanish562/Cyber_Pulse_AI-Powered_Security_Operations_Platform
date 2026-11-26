@@ -50,6 +50,10 @@ async function refreshAccessToken(): Promise<string | null> {
       { headers: { "Content-Type": "application/json" } },
     );
     const { accessToken, refreshToken: nextRefreshToken } = response.data;
+    if (!accessToken || !nextRefreshToken) {
+      tokenStorage.clear();
+      return null;
+    }
     tokenStorage.setTokens(accessToken, nextRefreshToken);
     return accessToken;
   } catch {

@@ -6,7 +6,9 @@ import {
   Bell,
   FileSearch,
   Gauge,
+  KeyRound,
   LayoutDashboard,
+  Lock,
   LogOut,
   Menu,
   ShieldAlert,
@@ -41,6 +43,8 @@ const NAV_ITEMS = [
   { to: "/incidents", label: "Incidents", icon: AlertTriangle },
   { to: "/audit-logs", label: "Audit Logs", icon: FileSearch },
   { to: "/users", label: "Users & RBAC", icon: Users },
+  { to: "/api-keys", label: "Service API Keys", icon: KeyRound },
+  { to: "/security", label: "Security (2FA)", icon: Lock },
 ];
 
 export function DashboardLayout() {

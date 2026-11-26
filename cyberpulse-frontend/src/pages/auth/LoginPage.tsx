@@ -23,6 +23,7 @@ import { getApiErrorMessage } from "@/lib/api";
 const loginSchema = z.object({
   usernameOrEmail: z.string().trim().min(1, "Username or email is required"),
   password: z.string().min(1, "Password is required"),
+  totpCode: z.string().optional(),
 });
 
 type LoginFormValues = z.infer<typeof loginSchema>;
@@ -33,6 +34,7 @@ export function LoginPage() {
   const location = useLocation();
   const [submitting, setSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [mfaRequired, setMfaRequired] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
 
   const from =
@@ -51,7 +53,12 @@ export function LoginPage() {
     setSubmitting(true);
     setServerError(null);
     try {
-      await login(values);
+      const result = await login(values);
+      if (result.mfaRequired) {
+        setMfaRequired(true);
+        toast.info("Enter your 6-digit authenticator code");
+        return;
+      }
       toast.success("Signed in to CyberPulse");
       navigate(from, { replace: true });
     } catch (error) {
@@ -66,9 +73,13 @@ export function LoginPage() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-2xl">Sign in</CardTitle>
+        <CardTitle className="text-2xl">
+          {mfaRequired ? "Two-Factor Verification" : "Sign in"}
+        </CardTitle>
         <CardDescription>
-          Enter your credentials to access the Security Operations Center.
+          {mfaRequired
+            ? "Enter the 6-digit code from your authenticator app."
+            : "Enter your credentials to access the Security Operations Center."}
         </CardDescription>
       </CardHeader>
 
@@ -80,70 +91,106 @@ export function LoginPage() {
             </Alert>
           )}
 
-          <div className="space-y-2">
-            <Label htmlFor="usernameOrEmail">Username or Email</Label>
-            <Input
-              id="usernameOrEmail"
-              autoComplete="username"
-              placeholder="analyst@cyberpulse.io"
-              {...register("usernameOrEmail")}
-            />
-            {errors.usernameOrEmail && (
-              <p className="text-xs text-destructive">
-                {errors.usernameOrEmail.message}
-              </p>
-            )}
-          </div>
-
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <Label htmlFor="password">Password</Label>
-              <Link
-                to="/forgot-password"
-                className="text-xs text-muted-foreground hover:underline"
-              >
-                Forgot password?
-              </Link>
-            </div>
-            <div className="relative">
-              <Input
-                id="password"
-                type={showPassword ? "text" : "password"}
-                autoComplete="current-password"
-                className="pr-10"
-                {...register("password")}
-              />
-              <button
-                type="button"
-                aria-label={showPassword ? "Hide password" : "Show password"}
-                onClick={() => setShowPassword((prev) => !prev)}
-                className="absolute inset-y-0 right-0 flex items-center px-3 text-muted-foreground hover:text-foreground"
-              >
-                {showPassword ? (
-                  <EyeOff className="h-4 w-4" />
-                ) : (
-                  <Eye className="h-4 w-4" />
+          {!mfaRequired ? (
+            <>
+              <div className="space-y-2">
+                <Label htmlFor="usernameOrEmail">Username or Email</Label>
+                <Input
+                  id="usernameOrEmail"
+                  autoComplete="username"
+                  placeholder="analyst@cyberpulse.io"
+                  {...register("usernameOrEmail")}
+                />
+                {errors.usernameOrEmail && (
+                  <p className="text-xs text-destructive">
+                    {errors.usernameOrEmail.message}
+                  </p>
                 )}
-              </button>
+              </div>
+
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="password">Password</Label>
+                  <Link
+                    to="/forgot-password"
+                    className="text-xs text-muted-foreground hover:underline"
+                  >
+                    Forgot password?
+                  </Link>
+                </div>
+                <div className="relative">
+                  <Input
+                    id="password"
+                    type={showPassword ? "text" : "password"}
+                    autoComplete="current-password"
+                    className="pr-10"
+                    {...register("password")}
+                  />
+                  <button
+                    type="button"
+                    aria-label={showPassword ? "Hide password" : "Show password"}
+                    onClick={() => setShowPassword((prev) => !prev)}
+                    className="absolute inset-y-0 right-0 flex items-center px-3 text-muted-foreground hover:text-foreground"
+                  >
+                    {showPassword ? (
+                      <EyeOff className="h-4 w-4" />
+                    ) : (
+                      <Eye className="h-4 w-4" />
+                    )}
+                  </button>
+                </div>
+                {errors.password && (
+                  <p className="text-xs text-destructive">
+                    {errors.password.message}
+                  </p>
+                )}
+              </div>
+            </>
+          ) : (
+            <div className="space-y-2">
+              <Label htmlFor="totpCode">6-Digit Authenticator Code</Label>
+              <Input
+                id="totpCode"
+                inputMode="numeric"
+                maxLength={6}
+                placeholder="123456"
+                autoFocus
+                {...register("totpCode")}
+              />
             </div>
-            {errors.password && (
-              <p className="text-xs text-destructive">
-                {errors.password.message}
-              </p>
-            )}
-          </div>
+          )}
         </CardContent>
 
         <CardFooter className="flex flex-col gap-4">
           <Button type="submit" className="w-full" disabled={submitting}>
-            {submitting ? "Signing in..." : "Sign In"}
+            {submitting
+              ? "Verifying..."
+              : mfaRequired
+                ? "Verify & Sign In"
+                : "Sign In"}
           </Button>
-          <p className="text-center text-sm text-muted-foreground">
-            Don&apos;t have an account?{" "}
-            <Link to="/signup" className="font-medium text-primary hover:underline">
-              Create one
-            </Link>
-          </p>
+          {mfaRequired ? (
+            <button
+              type="button"
+              onClick={() => {
+                setMfaRequired(false);
+                setServerError(null);
+              }}
+              className="text-xs text-muted-foreground hover:underline"
+            >
+              Back to credentials
+            </button>
+          ) : (
+            <p className="text-center text-sm text-muted-foreground">
+              Don&apos;t have an account?{" "}
+              <Link
+                to="/signup"
+                className="font-medium text-primary hover:underline"
+              >
+                Create one
+              </Link>
+            </p>
+          )}
         </CardFooter>
       </form>
     </Card>

@@ -1,5 +1,6 @@
 package cyberpulse.config;
 
+import cyberpulse.apikey.security.ApiKeyAuthenticationFilter;
 import cyberpulse.auth.security.JwtAuthenticationFilter;
 import cyberpulse.common.exception.RestAccessDeniedHandler;
 import cyberpulse.common.exception.RestAuthenticationEntryPoint;
@@ -25,6 +26,8 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
+
+    private final ApiKeyAuthenticationFilter apiKeyAuthenticationFilter;
 
     private final AuthRateLimitFilter authRateLimitFilter;
 
@@ -131,7 +134,9 @@ public class SecurityConfig {
                                 .requestMatchers(
                                         "/api/v1/auth/register",
                                         "/api/v1/auth/login",
-                                        "/api/v1/auth/refresh"
+                                        "/api/v1/auth/refresh",
+                                        "/api/v1/auth/forgot-password",
+                                        "/api/v1/auth/reset-password"
                                 )
                                 .permitAll()
 
@@ -169,10 +174,14 @@ public class SecurityConfig {
 
 
                 // =====================================================
-                // FILTERS (RATE LIMIT -> JWT)
+                // FILTERS (RATE LIMIT -> API KEY -> JWT)
                 // =====================================================
                 .addFilterBefore(
                         authRateLimitFilter,
+                        UsernamePasswordAuthenticationFilter.class
+                )
+                .addFilterBefore(
+                        apiKeyAuthenticationFilter,
                         UsernamePasswordAuthenticationFilter.class
                 )
                 .addFilterBefore(

@@ -13,6 +13,7 @@ import type { AuthResponse, UserResponse } from "@/types/api";
 interface LoginCredentials {
   usernameOrEmail: string;
   password: string;
+  totpCode?: string;
 }
 
 interface RegisterPayload {
@@ -25,9 +26,10 @@ interface AuthContextValue {
   user: UserResponse | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  login: (credentials: LoginCredentials) => Promise<UserResponse>;
+  login: (credentials: LoginCredentials) => Promise<AuthResponse>;
   register: (payload: RegisterPayload) => Promise<UserResponse>;
   logout: () => Promise<void>;
+  refreshUser: () => Promise<void>;
   hasRole: (role: string) => boolean;
 }
 
@@ -36,6 +38,11 @@ const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<UserResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+
+  const refreshUser = useCallback(async () => {
+    const res = await api.get<UserResponse>("/api/v1/auth/me");
+    setUser(res.data);
+  }, []);
 
   useEffect(() => {
     const token = tokenStorage.getAccessToken();
@@ -56,9 +63,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = useCallback(async (credentials: LoginCredentials) => {
     const res = await api.post<AuthResponse>("/api/v1/auth/login", credentials);
-    tokenStorage.setTokens(res.data.accessToken, res.data.refreshToken);
+    if (res.data.mfaRequired) {
+      return res.data;
+    }
+    if (res.data.accessToken && res.data.refreshToken) {
+      tokenStorage.setTokens(res.data.accessToken, res.data.refreshToken);
+    }
     setUser(res.data.user);
-    return res.data.user;
+    return res.data;
   }, []);
 
   const register = useCallback(async (payload: RegisterPayload) => {
@@ -93,9 +105,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       login,
       register,
       logout,
+      refreshUser,
       hasRole,
     }),
-    [user, isLoading, login, register, logout, hasRole],
+    [user, isLoading, login, register, logout, refreshUser, hasRole],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

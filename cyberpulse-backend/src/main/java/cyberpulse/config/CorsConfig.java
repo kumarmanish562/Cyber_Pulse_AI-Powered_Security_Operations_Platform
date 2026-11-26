@@ -47,7 +47,8 @@ public class CorsConfig {
                         "Authorization",
                         "Content-Type",
                         "Accept",
-                        "X-Correlation-ID"
+                        "X-Correlation-ID",
+                        "X-API-Key"
                 )
         );
 

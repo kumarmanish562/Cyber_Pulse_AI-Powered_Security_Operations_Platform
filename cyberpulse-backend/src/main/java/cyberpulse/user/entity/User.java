@@ -70,6 +70,12 @@ public class User {
     )
     private Instant lastLoginAt;
 
+    @Column(name = "totp_secret", length = 64)
+    private String totpSecret;
+
+    @Column(name = "totp_enabled", nullable = false)
+    private boolean totpEnabled = false;
+
     @OneToMany(
             mappedBy = "user",
             cascade = CascadeType.ALL,

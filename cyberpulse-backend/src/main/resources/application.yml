@@ -64,6 +64,9 @@ cyberpulse:
     provider: ${AI_PROVIDER:gemini}
     api-key: ${AI_API_KEY:}
     model: ${AI_MODEL:gemini-2.5-flash}
+  frontend-url: ${FRONTEND_URL:http://localhost:5173}
+  mail:
+    from: ${MAIL_FROM:noreply@cyberpulse.local}
 
 
 

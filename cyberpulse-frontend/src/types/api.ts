@@ -22,14 +22,37 @@ export interface UserResponse {
   username: string;
   email: string;
   roles: string[];
+  mfaEnabled?: boolean;
 }
 
 export interface AuthResponse {
-  accessToken: string;
-  refreshToken: string;
+  accessToken: string | null;
+  refreshToken: string | null;
   tokenType: string;
   expiresIn: number;
   user: UserResponse;
+  mfaRequired?: boolean;
+}
+
+export interface ServiceApiKey {
+  id: string;
+  name: string;
+  keyPrefix: string;
+  scopes: string;
+  active: boolean;
+  lastUsedAt: string | null;
+  expiresAt: string | null;
+  createdAt: string;
+}
+
+export interface CreateApiKeyResponse {
+  apiKey: ServiceApiKey;
+  rawKey: string;
+}
+
+export interface MfaSetupResponse {
+  secret: string;
+  otpauthUri: string;
 }
 
 export interface ApiErrorResponse {

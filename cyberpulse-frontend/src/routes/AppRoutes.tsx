@@ -53,6 +53,16 @@ const UsersPage = lazy(() =>
     default: m.UsersPage,
   })),
 );
+const ApiKeysPage = lazy(() =>
+  import("@/pages/soc/ApiKeysPage").then((m) => ({
+    default: m.ApiKeysPage,
+  })),
+);
+const SecuritySettingsPage = lazy(() =>
+  import("@/pages/soc/SecuritySettingsPage").then((m) => ({
+    default: m.SecuritySettingsPage,
+  })),
+);
 
 function RouteFallback() {
   return (
@@ -90,6 +100,8 @@ export function AppRoutes() {
               <Route path="/incidents" element={<IncidentsPage />} />
               <Route path="/audit-logs" element={<AuditLogsPage />} />
               <Route path="/users" element={<UsersPage />} />
+              <Route path="/api-keys" element={<ApiKeysPage />} />
+              <Route path="/security" element={<SecuritySettingsPage />} />
             </Route>
           </Route>
         </Routes>

@@ -12,6 +12,7 @@ import cyberpulse.user.entity.User;
 import cyberpulse.user.repository.UserRepository;
 
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -40,6 +41,8 @@ public class AuthService {
 
     private final RefreshTokenService refreshTokenService;
 
+    private final TotpService totpService;
+
     public AuthService(
             UserRepository userRepository,
             RoleRepository roleRepository,
@@ -47,7 +50,8 @@ public class AuthService {
             AuthenticationManager authenticationManager,
             UserDetailsService userDetailsService,
             JwtService jwtService,
-            RefreshTokenService refreshTokenService
+            RefreshTokenService refreshTokenService,
+            TotpService totpService
     ) {
 
         this.userRepository = userRepository;
@@ -57,6 +61,7 @@ public class AuthService {
         this.userDetailsService = userDetailsService;
         this.jwtService = jwtService;
         this.refreshTokenService = refreshTokenService;
+        this.totpService = totpService;
     }
 
     @Transactional
@@ -142,6 +147,15 @@ public class AuthService {
 
         UserDetails userDetails =
                 (UserDetails) authentication.getPrincipal();
+
+        if (user.isTotpEnabled()) {
+            if (request.totpCode() == null || request.totpCode().isBlank()) {
+                return AuthResponse.mfaChallenge(toUserResponse(user));
+            }
+            if (!totpService.verifyCode(user.getTotpSecret(), request.totpCode())) {
+                throw new BadCredentialsException("Invalid MFA verification code");
+            }
+        }
 
         String accessToken =
                 jwtService.generateAccessToken(
@@ -285,7 +299,8 @@ public class AuthService {
                 user.getId(),
                 user.getUsername(),
                 user.getEmail(),
-                roles
+                roles,
+                user.isTotpEnabled()
         );
     }
 }
