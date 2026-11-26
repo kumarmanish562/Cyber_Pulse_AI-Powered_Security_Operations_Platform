@@ -61,3 +61,8 @@ architecture/
 diagrams/
 documentation/
 ```
+
+# Environment secrets
+.env
+.env.*
+!.env.example
