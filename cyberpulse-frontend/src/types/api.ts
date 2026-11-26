@@ -135,6 +135,19 @@ export interface ShiftHandoverReport {
   markdownSummary: string;
 }
 
+export type PlaybookAction =
+  | "CONTAIN_AND_BLOCK_IP"
+  | "ESCALATE_ALERT"
+  | "CLOSE_FALSE_POSITIVE";
+
+export interface ExecutePlaybookResponse {
+  incidentId: string;
+  incidentNumber: string;
+  action: PlaybookAction;
+  stepsExecuted: string[];
+  executedAt: string;
+}
+
 export interface ApiErrorResponse {
   timestamp: string;
   status: number;

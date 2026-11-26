@@ -32,11 +32,13 @@ import { formatDateTime } from "@/utils/format";
 import { api, getApiErrorMessage } from "@/lib/api";
 import type {
   AiTriageResponse,
+  ExecutePlaybookResponse,
   Incident,
   IncidentNote,
   IncidentSeverity,
   IncidentStatus,
   PageResponse,
+  PlaybookAction,
 } from "@/types/api";
 
 const STATUSES: IncidentStatus[] = [
@@ -126,6 +128,23 @@ export function IncidentsPage() {
     onSuccess: (res) => {
       setAiTriage(res.data);
       toast.success("AI triage analysis complete");
+    },
+    onError: (err) => toast.error(getApiErrorMessage(err)),
+  });
+
+  const playbookMutation = useMutation({
+    mutationFn: ({ id, action }: { id: string; action: PlaybookAction }) =>
+      api.post<ExecutePlaybookResponse>(
+        `/api/v1/playbooks/incidents/${id}/execute`,
+        { action },
+      ),
+    onSuccess: (res) => {
+      queryClient.invalidateQueries({ queryKey: ["incidents"] });
+      queryClient.invalidateQueries({
+        queryKey: ["incident-notes", selectedIncident?.id],
+      });
+      queryClient.invalidateQueries({ queryKey: ["blocklist"] });
+      toast.success(`Playbook ${res.data.action} executed`);
     },
     onError: (err) => toast.error(getApiErrorMessage(err)),
   });
@@ -436,6 +455,55 @@ export function IncidentsPage() {
                       </div>
                     </div>
                   )}
+                </div>
+
+                {/* SOAR Automated Playbooks */}
+                <div className="space-y-2 rounded-md border p-3">
+                  <div className="text-xs font-semibold">SOAR Playbooks</div>
+                  <div className="flex flex-wrap gap-2">
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      disabled={playbookMutation.isPending}
+                      onClick={() =>
+                        playbookMutation.mutate({
+                          id: selectedIncident.id,
+                          action: "CONTAIN_AND_BLOCK_IP",
+                        })
+                      }
+                    >
+                      Contain &amp; Block IP
+                    </Button>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      disabled={playbookMutation.isPending}
+                      onClick={() =>
+                        playbookMutation.mutate({
+                          id: selectedIncident.id,
+                          action: "ESCALATE_ALERT",
+                        })
+                      }
+                    >
+                      Escalate Alert
+                    </Button>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      disabled={playbookMutation.isPending}
+                      onClick={() =>
+                        playbookMutation.mutate({
+                          id: selectedIncident.id,
+                          action: "CLOSE_FALSE_POSITIVE",
+                        })
+                      }
+                    >
+                      Close False Positive
+                    </Button>
+                  </div>
                 </div>
 
                 <div className="space-y-2 border-t pt-3">
