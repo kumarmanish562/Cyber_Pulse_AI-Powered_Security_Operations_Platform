@@ -10,14 +10,6 @@ import {
 } from "@/components/soc/PasswordInput";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/context/AuthContext";
@@ -86,114 +78,133 @@ export function SignupPage() {
   };
 
   return (
-    <Card className="border-border/70 bg-card/90 shadow-xl backdrop-blur">
-      <CardHeader>
-        <CardTitle className="text-2xl">Build a More Secure Future.</CardTitle>
-        <CardDescription>
+    <div className="rounded-2xl border border-border/80 bg-card p-6 shadow-sm sm:p-8">
+      <div className="space-y-1.5">
+        <h1 className="text-2xl font-semibold tracking-[-0.025em]">
+          Build a More Secure Future.
+        </h1>
+        <p className="text-sm text-muted-foreground">
           Create your CyberPulse Security Operations workspace account.
-        </CardDescription>
-      </CardHeader>
+        </p>
+      </div>
 
-      <form onSubmit={handleSubmit(onSubmit)}>
-        <CardContent className="space-y-4">
-          {serverError && (
-            <Alert variant="destructive">
-              <AlertDescription>{serverError}</AlertDescription>
-            </Alert>
+      <form onSubmit={handleSubmit(onSubmit)} className="mt-6 space-y-4">
+        {serverError && (
+          <Alert variant="destructive">
+            <AlertDescription>{serverError}</AlertDescription>
+          </Alert>
+        )}
+
+        <div className="space-y-1.5">
+          <Label htmlFor="username" className="text-[13px]">
+            Username
+          </Label>
+          <Input
+            id="username"
+            autoComplete="username"
+            placeholder="soc_analyst"
+            className="h-10 rounded-xl"
+            {...register("username")}
+          />
+          {errors.username && (
+            <p className="text-xs text-destructive">
+              {errors.username.message}
+            </p>
           )}
+        </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="username">Username</Label>
-            <Input
-              id="username"
-              autoComplete="username"
-              placeholder="soc_analyst"
-              {...register("username")}
+        <div className="space-y-1.5">
+          <Label htmlFor="email" className="text-[13px]">
+            Work Email
+          </Label>
+          <Input
+            id="email"
+            type="email"
+            autoComplete="email"
+            placeholder="analyst@company.com"
+            className="h-10 rounded-xl"
+            {...register("email")}
+          />
+          {errors.email && (
+            <p className="text-xs text-destructive">{errors.email.message}</p>
+          )}
+        </div>
+
+        <div className="space-y-1.5">
+          <Label htmlFor="password" className="text-[13px]">
+            Password
+          </Label>
+          <PasswordInput
+            id="password"
+            autoComplete="new-password"
+            className="h-10 rounded-xl"
+            {...register("password")}
+          />
+          <PasswordStrengthBar password={passwordValue} />
+          {errors.password && (
+            <p className="text-xs text-destructive">
+              {errors.password.message}
+            </p>
+          )}
+        </div>
+
+        <div className="space-y-1.5">
+          <Label htmlFor="confirmPassword" className="text-[13px]">
+            Confirm Password
+          </Label>
+          <PasswordInput
+            id="confirmPassword"
+            autoComplete="new-password"
+            className="h-10 rounded-xl"
+            {...register("confirmPassword")}
+          />
+          {errors.confirmPassword && (
+            <p className="text-xs text-destructive">
+              {errors.confirmPassword.message}
+            </p>
+          )}
+        </div>
+
+        <div className="space-y-1 pt-1">
+          <label className="flex cursor-pointer items-center gap-2.5 text-xs text-muted-foreground select-none">
+            <input
+              type="checkbox"
+              className="h-4 w-4 rounded border-border accent-foreground"
+              {...register("acceptTerms")}
             />
-            {errors.username && (
-              <p className="text-xs text-destructive">
-                {errors.username.message}
-              </p>
-            )}
-          </div>
+            <span>
+              I agree to the CyberPulse Terms of Use and Security Policy
+            </span>
+          </label>
+          {errors.acceptTerms && (
+            <p className="text-xs text-destructive">
+              {errors.acceptTerms.message}
+            </p>
+          )}
+        </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="email">Work Email</Label>
-            <Input
-              id="email"
-              type="email"
-              autoComplete="email"
-              placeholder="analyst@company.com"
-              {...register("email")}
-            />
-            {errors.email && (
-              <p className="text-xs text-destructive">{errors.email.message}</p>
-            )}
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
-            <PasswordInput
-              id="password"
-              autoComplete="new-password"
-              {...register("password")}
-            />
-            <PasswordStrengthBar password={passwordValue} />
-            {errors.password && (
-              <p className="text-xs text-destructive">
-                {errors.password.message}
-              </p>
-            )}
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="confirmPassword">Confirm Password</Label>
-            <PasswordInput
-              id="confirmPassword"
-              autoComplete="new-password"
-              {...register("confirmPassword")}
-            />
-            {errors.confirmPassword && (
-              <p className="text-xs text-destructive">
-                {errors.confirmPassword.message}
-              </p>
-            )}
-          </div>
-
-          <div className="space-y-1">
-            <label className="flex cursor-pointer items-center gap-2 text-xs text-muted-foreground">
-              <input
-                type="checkbox"
-                className="h-3.5 w-3.5 rounded border-border accent-primary"
-                {...register("acceptTerms")}
-              />
-              <span>
-                I agree to the CyberPulse Terms of Use and Security Policy
-              </span>
-            </label>
-            {errors.acceptTerms && (
-              <p className="text-xs text-destructive">
-                {errors.acceptTerms.message}
-              </p>
-            )}
-          </div>
-        </CardContent>
-
-        <CardFooter className="flex flex-col gap-4">
-          <Button type="submit" className="w-full" disabled={submitting}>
+        <div className="pt-2">
+          <Button
+            type="submit"
+            className="h-10 w-full rounded-full font-medium"
+            disabled={submitting}
+          >
             {submitting ? "Creating account..." : "Create Account"}
           </Button>
-          <p className="text-center text-sm text-muted-foreground">
+        </div>
+
+        <div className="border-t border-border/60 pt-5 text-center">
+          <p className="text-sm text-muted-foreground">
             Already have an account?{" "}
             <Link
               to="/login"
-              className="font-medium text-primary hover:underline"
+              className="font-medium text-foreground hover:underline"
             >
               Sign In
             </Link>
           </p>
-        </CardFooter>
+        </div>
       </form>
-    </Card>
+    </div>
   );
 }

@@ -10,14 +10,6 @@ import {
 } from "@/components/soc/PasswordInput";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { api, getApiErrorMessage } from "@/lib/api";
@@ -76,67 +68,89 @@ export function ResetPasswordPage() {
   };
 
   return (
-    <Card className="border-border/70 bg-card/90 shadow-xl backdrop-blur">
-      <CardHeader>
-        <CardTitle className="text-2xl">Reset Password</CardTitle>
-        <CardDescription>
+    <div className="rounded-2xl border border-border/80 bg-card p-6 shadow-sm sm:p-8">
+      <div className="space-y-1.5">
+        <h1 className="text-2xl font-semibold tracking-[-0.025em]">
+          Reset Password
+        </h1>
+        <p className="text-sm text-muted-foreground">
           Enter your recovery token and choose a strong new password.
-        </CardDescription>
-      </CardHeader>
+        </p>
+      </div>
 
-      <form onSubmit={handleSubmit(onSubmit)}>
-        <CardContent className="space-y-4">
-          {serverError && (
-            <Alert variant="destructive">
-              <AlertDescription>{serverError}</AlertDescription>
-            </Alert>
+      <form onSubmit={handleSubmit(onSubmit)} className="mt-6 space-y-4">
+        {serverError && (
+          <Alert variant="destructive">
+            <AlertDescription>{serverError}</AlertDescription>
+          </Alert>
+        )}
+
+        <div className="space-y-1.5">
+          <Label htmlFor="token" className="text-[13px]">
+            Reset Token
+          </Label>
+          <Input
+            id="token"
+            className="h-10 rounded-xl font-mono text-xs"
+            {...register("token")}
+          />
+          {errors.token && (
+            <p className="text-xs text-destructive">{errors.token.message}</p>
           )}
+        </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="token">Reset Token</Label>
-            <Input id="token" {...register("token")} />
-            {errors.token && (
-              <p className="text-xs text-destructive">{errors.token.message}</p>
-            )}
-          </div>
+        <div className="space-y-1.5">
+          <Label htmlFor="newPassword" className="text-[13px]">
+            New Password
+          </Label>
+          <PasswordInput
+            id="newPassword"
+            className="h-10 rounded-xl"
+            {...register("newPassword")}
+          />
+          <PasswordStrengthBar password={passwordValue} />
+          {errors.newPassword && (
+            <p className="text-xs text-destructive">
+              {errors.newPassword.message}
+            </p>
+          )}
+        </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="newPassword">New Password</Label>
-            <PasswordInput id="newPassword" {...register("newPassword")} />
-            <PasswordStrengthBar password={passwordValue} />
-            {errors.newPassword && (
-              <p className="text-xs text-destructive">
-                {errors.newPassword.message}
-              </p>
-            )}
-          </div>
+        <div className="space-y-1.5">
+          <Label htmlFor="confirmPassword" className="text-[13px]">
+            Confirm New Password
+          </Label>
+          <PasswordInput
+            id="confirmPassword"
+            className="h-10 rounded-xl"
+            {...register("confirmPassword")}
+          />
+          {errors.confirmPassword && (
+            <p className="text-xs text-destructive">
+              {errors.confirmPassword.message}
+            </p>
+          )}
+        </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="confirmPassword">Confirm New Password</Label>
-            <PasswordInput
-              id="confirmPassword"
-              {...register("confirmPassword")}
-            />
-            {errors.confirmPassword && (
-              <p className="text-xs text-destructive">
-                {errors.confirmPassword.message}
-              </p>
-            )}
-          </div>
-        </CardContent>
-
-        <CardFooter className="flex flex-col gap-3">
-          <Button type="submit" className="w-full" disabled={submitting}>
+        <div className="pt-2">
+          <Button
+            type="submit"
+            className="h-10 w-full rounded-full font-medium"
+            disabled={submitting}
+          >
             {submitting ? "Resetting..." : "Reset Password"}
           </Button>
+        </div>
+
+        <div className="border-t border-border/60 pt-5 text-center">
           <Link
             to="/login"
-            className="text-xs text-muted-foreground hover:underline"
+            className="text-sm text-muted-foreground transition-colors hover:text-foreground hover:underline"
           >
             Back to Login
           </Link>
-        </CardFooter>
+        </div>
       </form>
-    </Card>
+    </div>
   );
 }
