@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Menu, ShieldCheck, X } from "lucide-react";
+import { ArrowRight, Menu, ShieldCheck, X } from "lucide-react";
 import { Link } from "react-router-dom";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { buttonVariants } from "@/components/ui/button";
@@ -16,36 +16,39 @@ export function LandingNavbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
-    <header className="sticky top-0 z-50 border-b border-border/60 bg-background/85 backdrop-blur-xl">
-      <div className="mx-auto flex h-14 w-full max-w-6xl items-center justify-between px-4 sm:px-6 lg:px-8">
-        <Link to="/" className="flex items-center gap-2.5">
-          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-foreground text-background">
-            <ShieldCheck className="h-4 w-4" />
+    <header className="sticky top-0 z-50 w-full px-4 pt-3 sm:px-6">
+      <div className="mx-auto flex h-13 w-full max-w-5xl items-center justify-between rounded-full border border-border/80 bg-background/80 px-3 shadow-lg shadow-black/5 backdrop-blur-xl sm:px-4 dark:shadow-black/40">
+        {/* Brand */}
+        <Link to="/" className="flex items-center gap-2 pl-1">
+          <div className="flex h-7 w-7 items-center justify-center rounded-full bg-foreground text-background">
+            <ShieldCheck className="h-3.5 w-3.5" />
           </div>
-          <span className="text-[15px] font-semibold tracking-tight">
+          <span className="text-sm font-semibold tracking-tight">
             CyberPulse
           </span>
         </Link>
 
-        <nav className="hidden items-center gap-7 md:flex">
+        {/* Segmented Center Pill Nav */}
+        <nav className="hidden items-center gap-0.5 rounded-full border border-border/60 bg-muted/50 p-1 md:flex">
           {NAV_LINKS.map((item) => (
             <a
               key={item.href}
               href={item.href}
-              className="text-[13px] font-medium text-muted-foreground transition-colors hover:text-foreground"
+              className="rounded-full px-3.5 py-1 text-xs font-medium text-muted-foreground transition-colors hover:bg-background hover:text-foreground"
             >
               {item.label}
             </a>
           ))}
         </nav>
 
-        <div className="hidden items-center gap-2 md:flex">
+        {/* Actions */}
+        <div className="hidden items-center gap-1.5 md:flex">
           <ThemeToggle />
           <Link
             to="/login"
             className={cn(
               buttonVariants({ variant: "ghost", size: "sm" }),
-              "rounded-full px-4 text-[13px]",
+              "h-8 rounded-full px-3.5 text-xs font-medium",
             )}
           >
             Sign In
@@ -54,14 +57,16 @@ export function LandingNavbar() {
             to="/signup"
             className={cn(
               buttonVariants({ size: "sm" }),
-              "rounded-full bg-foreground px-4 text-[13px] text-background hover:bg-foreground/90",
+              "h-8 rounded-full bg-foreground px-4 text-xs font-medium text-background hover:bg-foreground/90",
             )}
           >
             Get Started
+            <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
           </Link>
         </div>
 
-        <div className="flex items-center gap-2 md:hidden">
+        {/* Mobile Controls */}
+        <div className="flex items-center gap-1.5 md:hidden">
           <ThemeToggle />
           <button
             type="button"
@@ -81,25 +86,26 @@ export function LandingNavbar() {
         </div>
       </div>
 
+      {/* Mobile Floating Drawer */}
       {mobileOpen && (
-        <div className="border-t border-border/60 bg-background/95 px-4 py-4 backdrop-blur-xl md:hidden">
-          <nav className="flex flex-col gap-3">
+        <div className="mx-auto mt-2 w-full max-w-5xl rounded-2xl border border-border/80 bg-background/95 p-4 shadow-xl backdrop-blur-xl md:hidden">
+          <nav className="flex flex-col gap-1">
             {NAV_LINKS.map((item) => (
               <a
                 key={item.href}
                 href={item.href}
                 onClick={() => setMobileOpen(false)}
-                className="text-sm font-medium text-muted-foreground hover:text-foreground"
+                className="rounded-xl px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
               >
                 {item.label}
               </a>
             ))}
-            <div className="mt-2 flex gap-2 border-t border-border/60 pt-3">
+            <div className="mt-3 flex gap-2 border-t border-border/60 pt-3">
               <Link
                 to="/login"
                 className={cn(
                   buttonVariants({ variant: "outline", size: "sm" }),
-                  "flex-1 rounded-full",
+                  "h-9 flex-1 rounded-full",
                 )}
               >
                 Sign In
@@ -108,7 +114,7 @@ export function LandingNavbar() {
                 to="/signup"
                 className={cn(
                   buttonVariants({ size: "sm" }),
-                  "flex-1 rounded-full bg-foreground text-background hover:bg-foreground/90",
+                  "h-9 flex-1 rounded-full bg-foreground text-background hover:bg-foreground/90",
                 )}
               >
                 Get Started
