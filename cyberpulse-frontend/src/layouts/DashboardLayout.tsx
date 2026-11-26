@@ -33,6 +33,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { useAuth } from "@/context/AuthContext";
 import { useSocStream } from "@/hooks/useSocStream";
 import { api } from "@/lib/api";
@@ -269,6 +270,14 @@ export function DashboardLayout() {
           </div>
 
           <div className="flex items-center gap-3">
+            <Badge
+              variant="outline"
+              className="hidden items-center gap-1.5 border-emerald-500/40 bg-emerald-500/10 text-emerald-500 sm:inline-flex"
+            >
+              <span className="h-2 w-2 animate-pulse rounded-full bg-emerald-500" />
+              LIVE
+            </Badge>
+            <ThemeToggle />
             {/* Notifications Dropdown */}
             <DropdownMenu>
               <DropdownMenuTrigger

@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import {
   Bar,
   BarChart,
+  Cell,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -96,6 +97,13 @@ export function DashboardPage() {
   const isLoading =
     eventsLoading || detectionsLoading || riskLoading || incidentsLoading;
 
+  const SEVERITY_BAR_COLORS: Record<string, string> = {
+    LOW: "#10b981",
+    MEDIUM: "#f59e0b",
+    HIGH: "#f97316",
+    CRITICAL: "#ef4444",
+  };
+
   return (
     <div className="space-y-6">
       <div>
@@ -150,8 +158,22 @@ export function DashboardPage() {
               <BarChart data={severityCounts}>
                 <XAxis dataKey="severity" fontSize={12} />
                 <YAxis allowDecimals={false} fontSize={12} />
-                <Tooltip />
-                <Bar dataKey="count" fill="currentColor" radius={[4, 4, 0, 0]} />
+                <Tooltip
+                  contentStyle={{
+                    borderRadius: "8px",
+                    border: "1px solid var(--border)",
+                    backgroundColor: "var(--card)",
+                    color: "var(--card-foreground)",
+                  }}
+                />
+                <Bar dataKey="count" radius={[4, 4, 0, 0]}>
+                  {severityCounts.map((entry) => (
+                    <Cell
+                      key={entry.severity}
+                      fill={SEVERITY_BAR_COLORS[entry.severity] ?? "#3b82f6"}
+                    />
+                  ))}
+                </Bar>
               </BarChart>
             </ResponsiveContainer>
           </CardContent>
@@ -313,7 +335,7 @@ function KpiCard({
   loading: boolean;
 }) {
   return (
-    <Card>
+    <Card className="border-t-2 border-t-primary/60">
       <CardHeader className="flex flex-row items-center justify-between pb-2">
         <CardTitle className="text-sm font-medium text-muted-foreground">
           {title}
