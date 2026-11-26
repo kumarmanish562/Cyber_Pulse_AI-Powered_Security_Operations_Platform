@@ -10,10 +10,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  SeverityBadge,
-  formatDateTime,
-} from "@/components/soc/SeverityBadge";
+import { SeverityBadge } from "@/components/soc/SeverityBadge";
+import { formatDateTime } from "@/utils/format";
 import { api } from "@/lib/api";
 import type { PageResponse, RiskAssessment, Severity } from "@/types/api";
 

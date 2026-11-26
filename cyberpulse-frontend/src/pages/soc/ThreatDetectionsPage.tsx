@@ -10,7 +10,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { formatDateTime } from "@/components/soc/SeverityBadge";
+import { formatDateTime } from "@/utils/format";
 import { api } from "@/lib/api";
 import type { PageResponse, ThreatDetection } from "@/types/api";
 

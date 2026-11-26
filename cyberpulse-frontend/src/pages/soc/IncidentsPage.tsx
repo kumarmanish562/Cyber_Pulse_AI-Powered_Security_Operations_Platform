@@ -26,8 +26,8 @@ import {
 import {
   IncidentStatusBadge,
   SeverityBadge,
-  formatDateTime,
 } from "@/components/soc/SeverityBadge";
+import { formatDateTime } from "@/utils/format";
 import { api, getApiErrorMessage } from "@/lib/api";
 import type {
   AiTriageResponse,

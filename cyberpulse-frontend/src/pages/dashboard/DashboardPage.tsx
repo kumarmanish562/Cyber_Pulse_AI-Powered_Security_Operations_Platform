@@ -32,8 +32,8 @@ import {
 import {
   IncidentStatusBadge,
   SeverityBadge,
-  formatDateTime,
 } from "@/components/soc/SeverityBadge";
+import { formatDateTime } from "@/utils/format";
 import { api } from "@/lib/api";
 import type {
   Incident,
