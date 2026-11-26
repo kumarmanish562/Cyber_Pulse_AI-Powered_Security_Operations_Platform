@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Plus } from "lucide-react";
+import { Plus, Sparkles } from "lucide-react";
 import { toast } from "sonner";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -29,6 +30,7 @@ import {
 } from "@/components/soc/SeverityBadge";
 import { api, getApiErrorMessage } from "@/lib/api";
 import type {
+  AiTriageResponse,
   Incident,
   IncidentNote,
   IncidentSeverity,
@@ -52,6 +54,7 @@ export function IncidentsPage() {
   const [selectedIncident, setSelectedIncident] = useState<Incident | null>(
     null,
   );
+  const [aiTriage, setAiTriage] = useState<AiTriageResponse | null>(null);
   const [noteContent, setNoteContent] = useState("");
   const [newIncident, setNewIncident] = useState({
     title: "",
@@ -112,6 +115,16 @@ export function IncidentsPage() {
       });
       setNoteContent("");
       toast.success("Investigation note added");
+    },
+    onError: (err) => toast.error(getApiErrorMessage(err)),
+  });
+
+  const aiTriageMutation = useMutation({
+    mutationFn: (id: string) =>
+      api.post<AiTriageResponse>(`/api/v1/incidents/${id}/ai-triage`),
+    onSuccess: (res) => {
+      setAiTriage(res.data);
+      toast.success("AI triage analysis complete");
     },
     onError: (err) => toast.error(getApiErrorMessage(err)),
   });
@@ -255,7 +268,10 @@ export function IncidentsPage() {
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => setSelectedIncident(inc)}
+                        onClick={() => {
+                          setAiTriage(null);
+                          setSelectedIncident(inc);
+                        }}
                       >
                         Inspect
                       </Button>
@@ -342,6 +358,57 @@ export function IncidentsPage() {
                       </option>
                     ))}
                   </select>
+                </div>
+
+                {/* AI Triage & Remediation Panel */}
+                <div className="space-y-2 rounded-md border bg-muted/30 p-3">
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-2 font-semibold">
+                      <Sparkles className="h-4 w-4 text-primary" />
+                      <span>AI Triage &amp; Remediation</span>
+                    </div>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="secondary"
+                      disabled={aiTriageMutation.isPending}
+                      onClick={() =>
+                        aiTriageMutation.mutate(selectedIncident.id)
+                      }
+                    >
+                      {aiTriageMutation.isPending
+                        ? "Analyzing..."
+                        : "Run AI Triage"}
+                    </Button>
+                  </div>
+
+                  {aiTriage && (
+                    <div className="space-y-2 pt-1 text-xs">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <Badge variant="outline">{aiTriage.provider}</Badge>
+                        <span className="font-medium text-muted-foreground">
+                          {aiTriage.priorityAssessment}
+                        </span>
+                      </div>
+                      <p>{aiTriage.summary}</p>
+                      <p className="text-muted-foreground">
+                        <span className="font-semibold text-foreground">
+                          Likely Vector:{" "}
+                        </span>
+                        {aiTriage.likelyAttackVector}
+                      </p>
+                      <div>
+                        <div className="mb-1 font-semibold">
+                          Recommended Actions:
+                        </div>
+                        <ul className="list-disc space-y-1 pl-4 text-muted-foreground">
+                          {aiTriage.recommendedActions.map((action, idx) => (
+                            <li key={idx}>{action}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 <div className="space-y-2 border-t pt-3">

@@ -1,5 +1,6 @@
 package cyberpulse.event.repository;
 
+import cyberpulse.common.enums.EventType;
 import cyberpulse.common.enums.Severity;
 import cyberpulse.event.entity.SecurityEvent;
 import org.springframework.data.domain.Page;
@@ -54,5 +55,34 @@ public interface SecurityEventRepository
 
             @Param("to")
             Instant to
+    );
+
+    @Query("""
+        SELECT COUNT(e)
+        FROM SecurityEvent e
+        WHERE e.eventType = :eventType
+          AND e.sourceIp = :sourceIp
+          AND e.eventTime >= :from
+          AND e.eventTime <= :to
+    """)
+    long countEventsByTypeAndIp(
+            @Param("eventType") EventType eventType,
+            @Param("sourceIp") InetAddress sourceIp,
+            @Param("from") Instant from,
+            @Param("to") Instant to
+    );
+
+    @Query("""
+        SELECT COUNT(DISTINCT e.sourceIp)
+        FROM SecurityEvent e
+        WHERE e.username = :username
+          AND e.sourceIp IS NOT NULL
+          AND e.eventTime >= :from
+          AND e.eventTime <= :to
+    """)
+    long countDistinctSourceIpsForUser(
+            @Param("username") String username,
+            @Param("from") Instant from,
+            @Param("to") Instant to
     );
 }

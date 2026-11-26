@@ -180,3 +180,14 @@ export interface NotificationItem {
   read: boolean;
   createdAt: string;
 }
+
+export interface AiTriageResponse {
+  incidentId: string;
+  incidentNumber: string;
+  provider: string;
+  summary: string;
+  likelyAttackVector: string;
+  recommendedActions: string[];
+  priorityAssessment: string;
+  generatedAt: string;
+}
