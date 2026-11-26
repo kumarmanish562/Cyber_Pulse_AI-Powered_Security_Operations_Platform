@@ -2,10 +2,10 @@ package cyberpulse.event;
 
 import cyberpulse.common.enums.EventType;
 import cyberpulse.common.enums.Severity;
-import cyberpulse.detection.engine.DetectionEngine;
 import cyberpulse.event.dto.CreateSecurityEventRequest;
 import cyberpulse.event.dto.SecurityEventResponse;
 import cyberpulse.event.entity.SecurityEvent;
+import cyberpulse.event.event.SecurityEventCreatedEvent;
 import cyberpulse.event.mapper.SecurityEventMapper;
 import cyberpulse.event.repository.SecurityEventRepository;
 import cyberpulse.event.service.SecurityEventService;
@@ -16,10 +16,13 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 
 import java.time.Instant;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -32,7 +35,7 @@ class SecurityEventServiceTest {
     private SecurityEventMapper eventMapper;
 
     @Mock
-    private DetectionEngine detectionEngine;
+    private ApplicationEventPublisher eventPublisher;
 
     @InjectMocks
     private SecurityEventService eventService;

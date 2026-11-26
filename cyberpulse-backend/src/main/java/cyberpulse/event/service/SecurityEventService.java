@@ -1,13 +1,14 @@
 package cyberpulse.event.service;
 
-import cyberpulse.detection.engine.DetectionEngine;
 import cyberpulse.event.dto.CreateSecurityEventRequest;
 import cyberpulse.event.dto.SecurityEventFilter;
 import cyberpulse.event.dto.SecurityEventResponse;
 import cyberpulse.event.entity.SecurityEvent;
+import cyberpulse.event.event.SecurityEventCreatedEvent;
 import cyberpulse.event.mapper.SecurityEventMapper;
 import cyberpulse.event.repository.SecurityEventRepository;
 import cyberpulse.event.specification.SecurityEventSpecification;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -26,17 +27,17 @@ public class SecurityEventService {
     private final SecurityEventRepository eventRepository;
     private final SecurityEventMapper eventMapper;
 
-    private final DetectionEngine detectionEngine;
+    private final ApplicationEventPublisher eventPublisher;
 
 
     public SecurityEventService(
             SecurityEventRepository eventRepository,
             SecurityEventMapper eventMapper,
-            DetectionEngine detectionEngine
+            ApplicationEventPublisher eventPublisher
     ) {
         this.eventRepository = eventRepository;
         this.eventMapper = eventMapper;
-        this.detectionEngine = detectionEngine;
+        this.eventPublisher = eventPublisher;
     }
 
     @Transactional
@@ -52,7 +53,7 @@ public class SecurityEventService {
         SecurityEvent savedEvent =
                 eventRepository.save(event);
 
-        detectionEngine.analyze(savedEvent);
+        eventPublisher.publishEvent(new SecurityEventCreatedEvent(savedEvent.getId()));
 
         return eventMapper.toResponse(savedEvent);
     }
